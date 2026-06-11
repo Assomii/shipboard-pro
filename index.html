@@ -545,28 +545,45 @@ function parseCSV(text) {
 
 // Map sheet columns → internal fields
 function mapRow(r, idx) {
-  // detect columns by Arabic or English header patterns
-  const keys = Object.keys(r);
-  const get = (...patterns) => {
+  // ══════════════════════════════════════════════════════
+  // أعمدة الجدول الحقيقية (مطابقة تامة للعناوين في Google Sheets):
+  // تاريخ الإدخال | رقم الفاتورة | المورد | قيمة الفاتورة | العملة
+  // رقم البوليسة BL | رقم الحاوية | تاريخ الوصول المتوقع
+  // حالة الشحنة | ملاحظات | الأيام المتبقية | أيام التأخير
+  // ══════════════════════════════════════════════════════
+
+  // دالة مساعدة: تبحث بالاسم الحقيقي أولاً، ثم بالتشابه احتياطاً
+  const exact = (key) => {
+    if (r[key] !== undefined && r[key] !== null) return String(r[key]).trim();
+    // fallback: partial match (case-insensitive, ignores extra spaces)
+    const keys = Object.keys(r);
+    const k = keys.find(k => k.trim().toLowerCase() === key.trim().toLowerCase());
+    return k ? String(r[k]).trim() : '';
+  };
+  const fuzzy = (...patterns) => {
+    const keys = Object.keys(r);
     for (const p of patterns) {
       const k = keys.find(k => k.toLowerCase().includes(p.toLowerCase()));
-      if (k && r[k]) return r[k];
+      if (k && r[k]) return String(r[k]).trim();
     }
     return '';
   };
-  const entryDate   = get('تاريخ','entry','date') || '';
-  const invNum      = get('فاتورة','invoice num','inv') || `INV-${String(idx+1).padStart(4,'0')}`;
-  const supplier    = get('مورد','supplier','vendor') || '';
-  const invAmt      = parseFloat((get('مبلغ','amount','value','قيمة')||'0').replace(/[^0-9.]/g,''))||0;
-  const currency    = get('عملة','currency','curr') || 'USD';
-  const blNum       = get('بوليصة','bl ','b/l','bl#','رقم ب') || '';
-  const container   = get('حاوية','container','cont') || '';
-  const eta         = get('وصول','arrival','eta','expected') || '';
-  const status      = get('حالة','status','state') || 'In Transit';
-  const notes       = get('ملاحظات','notes','note','remarks') || '';
-  const remaining   = parseInt(get('متبقي','remaining','days rem')||'0')||0;
-  const delay       = parseInt(get('تأخير','delay','late')||'0')||0;
-  return { entryDate, invoiceNumber:invNum, supplier, invoiceAmount:invAmt, currency, blNumber:blNum, containerNumber:container, expectedArrival:eta, shipmentStatus:status, notes, remainingDays:remaining, delayDays:delay };
+
+  const entryDate      = exact('تاريخ الإدخال')           || fuzzy('تاريخ الإدخال','entry date','entrydate') || '';
+  const invoiceNumber  = exact('رقم الفاتورة')             || fuzzy('رقم الفاتورة','invoice') || `INV-${String(idx+1).padStart(4,'0')}`;
+  const supplier       = exact('المورد')                   || fuzzy('المورد','supplier','vendor') || '';
+  const rawAmt         = exact('قيمة الفاتورة')            || fuzzy('قيمة الفاتورة','amount','value') || '0';
+  const invoiceAmount  = parseFloat(rawAmt.toString().replace(/[^0-9.]/g,'')) || 0;
+  const currency       = exact('العملة')                   || fuzzy('العملة','currency') || 'USD';
+  const blNumber       = exact('رقم البوليسة BL')          || fuzzy('بوليسة','بوليصة','bl','b/l') || '';
+  const containerNumber= exact('رقم الحاوية')              || fuzzy('حاوية','container') || '';
+  const expectedArrival= exact('تاريخ الوصول المتوقع')     || fuzzy('وصول المتوقع','arrival','eta') || '';
+  const shipmentStatus = exact('حالة الشحنة')              || fuzzy('حالة الشحنة','status') || '';
+  const notes          = exact('ملاحظات')                  || fuzzy('ملاحظات','notes','remarks') || '';
+  const remainingDays  = parseInt(exact('الأيام المتبقية') || fuzzy('الأيام المتبقية','remaining') || '0') || 0;
+  const delayDays      = parseInt(exact('أيام التأخير')    || fuzzy('أيام التأخير','delay','late') || '0') || 0;
+
+  return { entryDate, invoiceNumber, supplier, invoiceAmount, currency, blNumber, containerNumber, expectedArrival, shipmentStatus, notes, remainingDays, delayDays };
 }
 
 // ═══════════════════════════════════════
@@ -729,8 +746,18 @@ function nav(id,el){
 // KPIs
 // ═══════════════════════════════════════
 function normStatus(s){
-  const map={'في الطريق':'In Transit','وصلت':'Arrived','متأخرة':'Delayed','الجمارك':'Customs Clearance','معلقة':'Pending'};
-  return map[s]||s;
+  if (!s) return 'Pending';
+  const clean = s.trim();
+  const map = {
+    'في الطريق':'In Transit','قيد الشحن':'In Transit','جارٍ الشحن':'In Transit','تحت الشحن':'In Transit',
+    'وصلت':'Arrived','تم الوصول':'Arrived','استلمت':'Arrived','مستلمة':'Arrived',
+    'متأخرة':'Delayed','متأخر':'Delayed','تأخير':'Delayed',
+    'الجمارك':'Customs Clearance','في الجمارك':'Customs Clearance','التخليص الجمركي':'Customs Clearance','تخليص جمركي':'Customs Clearance',
+    'معلقة':'Pending','معلق':'Pending','قيد الانتظار':'Pending','انتظار':'Pending',
+    'in transit':'In Transit','arrived':'Arrived','delayed':'Delayed',
+    'customs clearance':'Customs Clearance','customs':'Customs Clearance','pending':'Pending',
+  };
+  return map[clean] || map[clean.toLowerCase()] || clean;
 }
 function renderKPIs(){
   const d=S.data; const now=new Date();
