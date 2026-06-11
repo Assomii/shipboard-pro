@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ShipBoard Pro — لوحة متابعة الشحنات</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.12.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--bg2:#161b27;--bg3:#1e2537;--bg4:#252d3d;
+  --border:#2a3348;--border2:#334060;
+  --text:#e8eaf0;--text2:#9ba3b8;--text3:#5a6480;
+  --blue:#3b82f6;--blue2:#1d4ed8;--blue-bg:rgba(59,130,246,.15);
+  --green:#22c55e;--green-bg:rgba(34,197,94,.15);
+  --red:#ef4444;--red2:#b91c1c;--red-bg:rgba(239,68,68,.15);
+  --orange:#f97316;--orange-bg:rgba(249,115,22,.15);
+  --amber:#eab308;--amber-bg:rgba(234,179,8,.15);
+  --purple:#a855f7;--purple-bg:rgba(168,85,247,.15);
+  --teal:#14b8a6;--teal-bg:rgba(20,184,166,.15);
+  --r:10px;--rs:6px;
+}
+.lm{
+  --bg:#f0f2f7;--bg2:#fff;--bg3:#f8fafc;--bg4:#eef1f8;
+  --border:#dde3f0;--border2:#c8d0e4;
+  --text:#1a2035;--text2:#4a5568;--text3:#8a96b0;
+  --blue-bg:rgba(37,99,235,.1);--green-bg:rgba(22,163,74,.1);
+  --red-bg:rgba(220,38,38,.1);--orange-bg:rgba(234,88,12,.1);
+  --amber-bg:rgba(202,138,4,.1);--purple-bg:rgba(147,51,234,.1);--teal-bg:rgba(13,148,136,.1);
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI','Tahoma',system-ui,sans-serif;min-height:100vh;font-size:13px}
+/* TOPNAV */
+.tnav{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;flex-shrink:0}
+.bico{width:34px;height:34px;background:linear-gradient(135deg,#3b82f6,#a855f7);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800;flex-shrink:0}
+.nav-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.nbtn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:var(--rs);cursor:pointer;font-size:12px;display:flex;align-items:center;gap:5px;transition:all .2s;font-family:inherit;white-space:nowrap}
+.nbtn:hover{background:var(--bg4);color:var(--text);border-color:var(--border2)}
+.rbadge{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+/* STATUS BAR */
+.sbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:5px 20px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text3);gap:10px}
+.rtrack{flex:1;max-width:160px;height:3px;background:var(--bg4);border-radius:2px}
+.rfill{height:100%;background:var(--blue);border-radius:2px;transition:width .5s linear;width:100%}
+.src-status{display:flex;align-items:center;gap:6px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block}
+.dot.loading{background:var(--amber);animation:pulse 1s infinite}
+.dot.err{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+/* LAYOUT */
+.wrap{display:flex;flex:1}
+.side{width:210px;background:var(--bg2);border-inline-end:1px solid var(--border);padding:10px 8px;flex-shrink:0}
+.slbl{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;padding:10px 8px 4px}
+.sitem{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--rs);cursor:pointer;color:var(--text2);font-size:13px;transition:all .15s;margin:1px 0;border:none;background:none;width:100%;font-family:inherit}
+[dir=rtl] .sitem{text-align:right}
+[dir=ltr] .sitem{text-align:left}
+.sitem:hover{background:var(--bg4);color:var(--text)}
+.sitem.act{background:var(--blue-bg);color:var(--blue);font-weight:600}
+.sitem i{font-size:16px;width:18px;text-align:center;flex-shrink:0}
+/* MAIN */
+.main{flex:1;overflow-y:auto;padding:20px}
+.pg{display:none}.pg.act{display:block}
+.phdr{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+.ptitle{font-size:20px;font-weight:700;display:flex;align-items:center;gap:10px}
+.psub{color:var(--text2);font-size:12px;margin-top:3px}
+.ha{display:flex;gap:8px;flex-wrap:wrap}
+/* KPI */
+.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+.kcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:15px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s}
+.kcard:hover{transform:translateY(-2px);border-color:var(--border2)}
+.kcard::before{content:'';position:absolute;top:0;inset-inline-start:0;inset-inline-end:0;height:3px;border-radius:var(--r) var(--r) 0 0}
+.kb::before{background:var(--blue)}.kg::before{background:var(--green)}.kr::before{background:var(--red)}
+.ko::before{background:var(--orange)}.kp::before{background:var(--purple)}.kt::before{background:var(--teal)}
+.kam::before{background:var(--amber)}
+.kico{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;font-size:16px}
+.kico.kb{background:var(--blue-bg);color:var(--blue)}.kico.kg{background:var(--green-bg);color:var(--green)}
+.kico.kr{background:var(--red-bg);color:var(--red)}.kico.ko{background:var(--orange-bg);color:var(--orange)}
+.kico.kp{background:var(--purple-bg);color:var(--purple)}.kico.kt{background:var(--teal-bg);color:var(--teal)}
+.kico.kam{background:var(--amber-bg);color:var(--amber)}
+.kval{font-size:22px;font-weight:700;line-height:1.2}
+.klbl{font-size:11px;color:var(--text2);margin-top:4px}
+.ktrd{font-size:11px;margin-top:6px;display:flex;align-items:center;gap:4px}
+.ktrd.up{color:var(--green)}.ktrd.dn{color:var(--red)}.ktrd.nt{color:var(--text3)}
+/* CHARTS */
+.cgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:20px}
+.ccard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.ctit{font-size:13px;font-weight:600;margin-bottom:3px}
+.csub{font-size:11px;color:var(--text2);margin-bottom:12px}
+.cwrap{position:relative;width:100%}
+/* ALERTS */
+.agrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:20px}
+.alrt{border-radius:var(--r);padding:13px;border:1px solid;display:flex;gap:11px;align-items:flex-start}
+.alrt.rd{background:var(--red-bg);border-color:rgba(239,68,68,.4);color:var(--red)}
+.alrt.or{background:var(--orange-bg);border-color:rgba(249,115,22,.4);color:var(--orange)}
+.alrt.gn{background:var(--green-bg);border-color:rgba(34,197,94,.4);color:var(--green)}
+.alrt.am{background:var(--amber-bg);border-color:rgba(234,179,8,.4);color:var(--amber)}
+.aico{font-size:18px;flex-shrink:0;margin-top:1px}
+.atit{font-size:12px;font-weight:700;margin-bottom:4px}
+.abody{font-size:11px;opacity:.85;line-height:1.5}
+/* TABLE */
+.tcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:20px}
+.ttbar{padding:12px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--border)}
+.sbox{flex:1;min-width:160px;position:relative}
+.sbox i{position:absolute;inset-inline-start:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px}
+.sbox input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:7px 10px 7px 32px;color:var(--text);font-size:12px;outline:none;font-family:inherit}
+[dir=rtl] .sbox input{padding:7px 32px 7px 10px}
+.sbox input:focus{border-color:var(--blue)}
+.sbox input::placeholder{color:var(--text3)}
+select.flt{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:7px 10px;color:var(--text2);font-size:12px;cursor:pointer;outline:none;font-family:inherit}
+.btn{padding:7px 14px;border-radius:var(--rs);font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;border:1px solid;transition:all .15s;font-weight:500;font-family:inherit}
+.bo{background:transparent;border-color:var(--border2);color:var(--text2)}.bo:hover{background:var(--bg4);color:var(--text)}
+.bp{background:var(--blue);border-color:var(--blue2);color:#fff}.bp:hover{background:var(--blue2)}
+.bg2{background:#15803d;border-color:#14532d;color:#fff}.bg2:hover{opacity:.9}
+.brd{background:var(--red2);border-color:#7f1d1d;color:#fff}.brd:hover{opacity:.9}
+.twrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:950px}
+thead tr{background:var(--bg3)}
+th{padding:10px 12px;text-align:start;font-size:11px;font-weight:600;color:var(--text2);border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap}
+th:hover{color:var(--text)}
+td{padding:10px 12px;font-size:12px;border-bottom:1px solid var(--border);color:var(--text);white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg3)}
+.bdg{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.bdg.arr{background:var(--green-bg);color:var(--green)}
+.bdg.trn{background:var(--blue-bg);color:var(--blue)}
+.bdg.del{background:var(--red-bg);color:var(--red)}
+.bdg.cst{background:var(--orange-bg);color:var(--orange)}
+.bdg.pnd{background:var(--amber-bg);color:var(--amber)}
+.dys{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+.dys.r{background:var(--red-bg);color:var(--red)}
+.dys.o{background:var(--orange-bg);color:var(--orange)}
+.dys.b{background:var(--blue-bg);color:var(--blue)}
+.dys.g{background:var(--green-bg);color:var(--green)}
+.pag{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);flex-wrap:wrap;gap:10px}
+.pginfo{font-size:12px;color:var(--text2)}
+.pgbtns{display:flex;gap:4px}
+.pgb{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:var(--rs);border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:12px;transition:all .15s;font-family:inherit}
+.pgb:hover{background:var(--bg4);color:var(--text)}
+.pgb.act{background:var(--blue);border-color:var(--blue2);color:#fff}
+.pgb:disabled{opacity:.4;pointer-events:none}
+/* LEGEND */
+.leg{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
+.ld{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+/* SUMMARY */
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:20px}
+.sc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px}
+.sc h3{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px}
+.sr{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)}
+.sr:last-child{border-bottom:none}
+.srl{font-size:12px;color:var(--text2)}
+.srv{font-size:13px;font-weight:600}
+.ins{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border)}
+.ins:last-child{border-bottom:none}
+/* LOADING */
+.lov{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:999}
+.lcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:32px 44px;text-align:center;min-width:280px}
+.spin{width:38px;height:38px;border:3px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 14px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.pbar{width:220px;height:3px;background:var(--bg4);border-radius:2px;margin:12px auto 0;overflow:hidden}
+.pfill{height:100%;background:var(--blue);border-radius:2px;animation:ld 2s ease-in-out forwards}
+@keyframes ld{from{width:0}to{width:90%}}
+/* SETTINGS */
+.sinp{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:8px 12px;color:var(--text);font-size:12px;outline:none;font-family:inherit;margin-bottom:12px}
+.sinp:focus{border-color:var(--blue)}
+.slb{font-size:12px;color:var(--text2);display:block;margin-bottom:5px}
+/* NOTIFICATION */
+.notif{position:fixed;bottom:20px;inset-inline-end:20px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;font-size:12px;max-width:320px;z-index:999;display:none;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+/* RESPONSIVE */
+@media(max-width:768px){
+  .side{display:none}.main{padding:12px}
+  .kgrid{grid-template-columns:repeat(2,1fr)}
+  .cgrid{grid-template-columns:1fr}
+}
+@media print{
+  .tnav,.sbar,.side,.ttbar,.pag,.ha,.lov{display:none!important}
+  .main{padding:0}.tcard,.ccard{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- LOADING -->
+<div class="lov" id="lov">
+  <div class="lcard">
+    <div class="spin"></div>
+    <div style="font-size:16px;font-weight:700;color:var(--text)">ShipBoard Pro</div>
+    <div style="font-size:12px;color:var(--text2);margin-top:6px" id="ltxt">جارٍ تحميل البيانات…</div>
+    <div class="pbar"><div class="pfill" id="pfill"></div></div>
+  </div>
+</div>
+
+<!-- NOTIFICATION -->
+<div class="notif" id="notif"></div>
+
+<!-- TOPNAV -->
+<nav class="tnav">
+  <div class="brand">
+    <div class="bico" id="bico">SB</div>
+    <span id="bname">ShipBoard Pro</span>
+  </div>
+  <div class="nav-r">
+    <div class="src-status" id="srcStatus">
+      <div class="dot loading" id="srcDot"></div>
+      <span id="srcTxt" style="font-size:11px;color:var(--text3)">جارٍ التحميل…</span>
+    </div>
+    <button class="nbtn" onclick="toggleLang()" id="lbtn"><i class="ti ti-language"></i><span id="llbl">EN</span></button>
+    <button class="nbtn" onclick="toggleTheme()" id="tbtn"><i class="ti ti-moon"></i></button>
+    <button class="nbtn" onclick="manualRefresh()" id="rbtn"><i class="ti ti-refresh" id="rico"></i><span id="rtxt">تحديث</span></button>
+    <span class="rbadge" id="rlbl">مدير</span>
+  </div>
+</nav>
+
+<!-- STATUS BAR -->
+<div class="sbar">
+  <span id="lastUpd">آخر تحديث: الآن</span>
+  <div class="rtrack"><div class="rfill" id="rfill"></div></div>
+  <span id="nextUpd">التحديث التالي: ٥:٠٠</span>
+</div>
+
+<!-- LAYOUT -->
+<div class="wrap">
+<aside class="side" id="side">
+  <div class="slbl" id="sl1">الرئيسية</div>
+  <button class="sitem act" onclick="nav('dash',this)" id="n-dash"><i class="ti ti-layout-dashboard"></i><span id="nl-dash">لوحة التحكم</span></button>
+  <button class="sitem" onclick="nav('track',this)" id="n-track"><i class="ti ti-package"></i><span id="nl-track">الشحنات</span></button>
+  <button class="sitem" onclick="nav('anal',this)" id="n-anal"><i class="ti ti-chart-bar"></i><span id="nl-anal">التحليلات</span></button>
+  <div class="slbl" id="sl2">التقارير</div>
+  <button class="sitem" onclick="nav('summ',this)" id="n-summ"><i class="ti ti-clipboard-text"></i><span id="nl-summ">الملخص التنفيذي</span></button>
+  <button class="sitem" onclick="nav('rep',this)" id="n-rep"><i class="ti ti-file-export"></i><span id="nl-rep">التقارير</span></button>
+  <div class="slbl" id="sl3">الإعدادات</div>
+  <button class="sitem" onclick="nav('set',this)" id="n-set"><i class="ti ti-settings"></i><span id="nl-set">الإعدادات</span></button>
+</aside>
+
+<main class="main">
+
+<!-- ══ DASHBOARD ══ -->
+<div class="pg act" id="pg-dash">
+  <div class="phdr">
+    <div>
+      <div class="ptitle"><i class="ti ti-layout-dashboard" style="color:var(--blue)"></i><span id="t-dash">لوحة التحكم</span></div>
+      <div class="psub" id="s-dash">مراقبة الشحنات والفواتير في الوقت الفعلي</div>
+    </div>
+    <div class="ha">
+      <button class="btn bp" onclick="manualRefresh()"><i class="ti ti-refresh"></i><span id="btn-ref">تحديث البيانات</span></button>
+      <button class="btn bo" onclick="nav('summ',document.getElementById('n-summ'))"><i class="ti ti-file-analytics"></i><span id="btn-exec">الملخص التنفيذي</span></button>
+    </div>
+  </div>
+  <div class="kgrid" id="kgrid"></div>
+  <div style="font-size:13px;font-weight:600;margin-bottom:10px" id="atit">🔔 التنبيهات الذكية</div>
+  <div class="agrid" id="agrid"></div>
+  <div class="cgrid">
+    <div class="ccard">
+      <div class="ctit" id="ct1">توزيع حالة الشحنات</div>
+      <div class="csub" id="cs1">نسب الحالات الحالية</div>
+      <div class="leg" id="sleg"></div>
+      <div class="cwrap" style="height:200px"><canvas id="cStatus" role="img" aria-label="Shipment status chart"></canvas></div>
+    </div>
+    <div class="ccard">
+      <div class="ctit" id="ct2">قيمة المشتريات الشهرية</div>
+      <div class="csub" id="cs2">إجمالي الفواتير شهرياً (مكافئ USD)</div>
+      <div class="cwrap" style="height:220px"><canvas id="cMonthly" role="img" aria-label="Monthly purchases chart"></canvas></div>
+    </div>
+  </div>
+  <div class="cgrid">
+    <div class="ccard">
+      <div class="ctit" id="ct3">أكبر الموردين بالقيمة</div>
+      <div class="csub" id="cs3">ترتيب الموردين حسب إجمالي المشتريات</div>
+      <div class="cwrap" style="height:230px"><canvas id="cSupplier" role="img" aria-label="Supplier value chart"></canvas></div>
+    </div>
+    <div class="ccard">
+      <div class="ctit" id="ct4">توزيع العملات</div>
+      <div class="csub" id="cs4">المشتريات حسب نوع العملة</div>
+      <div class="leg" id="cleg"></div>
+      <div class="cwrap" style="height:200px"><canvas id="cCurr" role="img" aria-label="Currency distribution chart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TRACKING ══ -->
+<div class="pg" id="pg-track">
+  <div class="phdr">
+    <div>
+      <div class="ptitle"><i class="ti ti-package" style="color:var(--blue)"></i><span id="t-track">تتبع الشحنات</span></div>
+      <div class="psub" id="s-track">جميع فواتير الشراء والحاويات</div>
+    </div>
+    <div class="ha">
+      <button class="btn bo" onclick="exportCSV()"><i class="ti ti-file-spreadsheet"></i><span id="btn-xl">تصدير Excel</span></button>
+      <button class="btn bg2" onclick="window.print()"><i class="ti ti-printer"></i><span id="btn-pr">طباعة / PDF</span></button>
+    </div>
+  </div>
+  <div class="tcard">
+    <div class="ttbar">
+      <div class="sbox"><i class="ti ti-search"></i><input type="text" id="srch" placeholder="بحث في الفواتير والموردين والحاويات..." oninput="filterTbl()"></div>
+      <select class="flt" id="stFlt" onchange="filterTbl()"><option value="" id="fo-all">جميع الحالات</option></select>
+      <select class="flt" id="spFlt" onchange="filterTbl()"><option value="" id="fo-sup">جميع الموردين</option></select>
+      <select class="flt" id="crFlt" onchange="filterTbl()"><option value="" id="fo-cur">جميع العملات</option></select>
+      <select class="flt" id="ppFlt" onchange="S.pp=+this.value;S.pg=1;renderTbl()"><option value="10">١٠ / صفحة</option><option value="20">٢٠ / صفحة</option><option value="50">٥٠ / صفحة</option></select>
+    </div>
+    <div class="twrap"><table>
+      <thead id="thead"></thead>
+      <tbody id="tbody"></tbody>
+    </table></div>
+    <div class="pag">
+      <div class="pginfo" id="pginfo">عرض ١–١٠ من ٠</div>
+      <div class="pgbtns" id="pgbtns"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ANALYTICS ══ -->
+<div class="pg" id="pg-anal">
+  <div class="phdr">
+    <div>
+      <div class="ptitle"><i class="ti ti-chart-bar" style="color:var(--blue)"></i><span id="t-anal">التحليلات</span></div>
+      <div class="psub" id="s-anal">تحليل عميق للشحنات والموردين</div>
+    </div>
+  </div>
+  <div class="cgrid">
+    <div class="ccard">
+      <div class="ctit" id="ct5">توقعات الوصول — الأسابيع الأربعة القادمة</div>
+      <div class="csub" id="cs5">عدد الحاويات المتوقع وصولها أسبوعياً</div>
+      <div class="cwrap" style="height:220px"><canvas id="cForecast" role="img" aria-label="Forecast chart"></canvas></div>
+    </div>
+    <div class="ccard">
+      <div class="ctit" id="ct6">تحليل التأخير لكل مورد</div>
+      <div class="csub" id="cs6">متوسط أيام التأخير</div>
+      <div class="cwrap" style="height:230px"><canvas id="cDelay" role="img" aria-label="Delay analysis chart"></canvas></div>
+    </div>
+  </div>
+  <div class="cgrid" style="grid-template-columns:1fr">
+    <div class="ccard">
+      <div class="ctit" id="ct7">اتجاه أوقات التسليم</div>
+      <div class="csub" id="cs7">متوسط أيام التسليم عبر آخر ٨ أشهر</div>
+      <div class="cwrap" style="height:200px"><canvas id="cTrend" role="img" aria-label="Delivery trend chart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ EXECUTIVE SUMMARY ══ -->
+<div class="pg" id="pg-summ">
+  <div class="phdr">
+    <div>
+      <div class="ptitle"><i class="ti ti-clipboard-text" style="color:var(--blue)"></i><span id="t-summ">الملخص التنفيذي</span></div>
+      <div class="psub" id="s-summ">رؤى تلقائية للإدارة العليا</div>
+    </div>
+    <div class="ha">
+      <button class="btn bo" onclick="window.print()"><i class="ti ti-printer"></i><span id="btn-prt">طباعة</span></button>
+      <button class="btn bg2" onclick="exportCSV()"><i class="ti ti-file-spreadsheet"></i><span id="btn-xls">تصدير Excel</span></button>
+    </div>
+  </div>
+  <div class="sgrid" id="sgrid"></div>
+  <div class="ccard" style="margin-bottom:20px">
+    <div class="ctit" style="margin-bottom:14px" id="t-ins">الرؤى والتوصيات</div>
+    <div id="inslist"></div>
+  </div>
+</div>
+
+<!-- ══ REPORTS ══ -->
+<div class="pg" id="pg-rep">
+  <div class="phdr">
+    <div>
+      <div class="ptitle"><i class="ti ti-file-export" style="color:var(--blue)"></i><span id="t-rep">التقارير</span></div>
+      <div class="psub" id="s-rep">إنشاء وتصدير تقارير الأعمال</div>
+    </div>
+  </div>
+  <div class="sgrid" id="rgrid"></div>
+</div>
+
+<!-- ══ SETTINGS ══ -->
+<div class="pg" id="pg-set">
+  <div class="phdr">
+    <div>
+      <div class="ptitle"><i class="ti ti-settings" style="color:var(--blue)"></i><span id="t-set">الإعدادات</span></div>
+      <div class="psub" id="s-set">إعداد مصدر البيانات والتفضيلات</div>
+    </div>
+  </div>
+  <div style="max-width:580px">
+    <div class="sc" style="margin-bottom:16px">
+      <h3 id="sh1">ربط Google Sheets</h3>
+      <label class="slb" id="sl-url">رابط الجدول (CSV منشور)</label>
+      <input type="text" class="sinp" id="gurl" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vSY5DZRuPmHL3NJsJAYPMOYgwQQnAcGjWT4WpMaXgiUgG8iHJg2u3ZAsOTChXyQ0g/pub?gid=428520260&single=true&output=csv">
+      <label class="slb" id="sl-int">فترة التحديث التلقائي (دقائق)</label>
+      <input type="number" class="sinp" id="rint" value="5" min="1" max="60" style="max-width:120px">
+      <div style="display:flex;gap:10px;margin-top:4px;flex-wrap:wrap">
+        <button class="btn bp" onclick="saveSettings()"><i class="ti ti-device-floppy"></i><span id="btn-sav">حفظ وتطبيق</span></button>
+        <button class="btn bo" onclick="loadFromSheets(true)"><i class="ti ti-plug"></i><span id="btn-tst">اختبار الاتصال</span></button>
+      </div>
+      <div id="cstat" style="margin-top:12px;font-size:12px;padding:8px 12px;border-radius:var(--rs);display:none"></div>
+    </div>
+    <div class="sc" style="margin-bottom:16px">
+      <h3 id="sh2">الدور الوظيفي</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap" id="roleBtns">
+        <button class="btn bo" onclick="setRole('accountant',this)"><i class="ti ti-calculator"></i><span id="r-acc">محاسب</span></button>
+        <button class="btn bp" onclick="setRole('manager',this)"><i class="ti ti-user-check"></i><span id="r-mgr">مدير</span></button>
+        <button class="btn bo" onclick="setRole('executive',this)"><i class="ti ti-star"></i><span id="r-exe">تنفيذي</span></button>
+      </div>
+    </div>
+    <div class="sc">
+      <h3 id="sh3">هوية الشركة</h3>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
+        <div id="logoPrev" style="width:64px;height:64px;background:var(--bg4);border:1px dashed var(--border2);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:22px"><i class="ti ti-building"></i></div>
+        <div>
+          <button class="btn bo" onclick="document.getElementById('logoInp').click()"><i class="ti ti-upload"></i><span id="btn-logo">رفع الشعار</span></button>
+          <input type="file" id="logoInp" accept="image/*" style="display:none" onchange="prevLogo(event)">
+          <div style="font-size:11px;color:var(--text3);margin-top:6px">PNG أو JPG، حد أقصى ٢ ميغابايت</div>
+        </div>
+      </div>
+      <label class="slb" id="sl-co">اسم الشركة</label>
+      <input type="text" class="sinp" id="coname" placeholder="اسم شركتك" oninput="document.getElementById('bname').textContent=this.value||'ShipBoard Pro'">
+    </div>
+  </div>
+</div>
+
+</main>
+</div><!-- /wrap -->
+</div><!-- /app -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+const S = {
+  lang:'ar', theme:'dark', role:'manager',
+  data:[], filtered:[], pg:1, pp:10, sc:'', sd:1,
+  countdown:300, timer:null, charts:{},
+  csvUrl:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSY5DZRuPmHL3NJsJAYPMOYgwQQnAcGjWT4WpMaXgiUgG8iHJg2u3ZAsOTChXyQ0g/pub?gid=428520260&single=true&output=csv'
+};
+
+// ═══════════════════════════════════════
+// TRANSLATIONS
+// ═══════════════════════════════════════
+const TR = {
+  ar:{
+    loading:'جارٍ تحميل البيانات من Google Sheets…',
+    connected:'متصل', disconnected:'غير متصل', refreshing:'جارٍ التحديث…',
+    lastUpd:'آخر تحديث:', nextUpd:'التحديث التالي:',
+    refresh:'تحديث', exec:'الملخص التنفيذي', excel:'تصدير Excel', print:'طباعة / PDF',
+    alerts:'🔔 التنبيهات الذكية',
+    sl1:'الرئيسية', sl2:'التقارير', sl3:'الإعدادات',
+    navDash:'لوحة التحكم', navTrack:'الشحنات', navAnal:'التحليلات',
+    navSumm:'الملخص التنفيذي', navRep:'التقارير', navSet:'الإعدادات',
+    dashT:'لوحة التحكم', dashS:'مراقبة الشحنات والفواتير في الوقت الفعلي',
+    trackT:'تتبع الشحنات', trackS:'جميع فواتير الشراء والحاويات',
+    analT:'التحليلات', analS:'تحليل عميق للشحنات والموردين',
+    summT:'الملخص التنفيذي', summS:'رؤى تلقائية للإدارة العليا',
+    repT:'التقارير', repS:'إنشاء وتصدير تقارير الأعمال',
+    setT:'الإعدادات', setS:'إعداد مصدر البيانات والتفضيلات',
+    langLbl:'EN', roleLabel:'مدير',
+    roles:{accountant:'محاسب',manager:'مدير',executive:'تنفيذي'},
+    kpiLbls:['إجمالي الفواتير','إجمالي القيمة (USD)','في الطريق','وصلت','متأخرة','تصل هذا الأسبوع','تصل هذا الشهر','متوسط التسليم'],
+    statuses:{Arrived:'وصلت','In Transit':'في الطريق',Delayed:'متأخرة','Customs Clearance':'الجمارك',Pending:'معلقة','في الطريق':'في الطريق','وصلت':'وصلت','متأخرة':'متأخرة','الجمارك':'الجمارك','معلقة':'معلقة'},
+    thdr:['رقم الفاتورة','المورد','المبلغ','العملة','رقم BL','الحاوية','تاريخ الوصول','الأيام المتبقية','أيام التأخير','الحالة','ملاحظات'],
+    allStat:'جميع الحالات', allSup:'جميع الموردين', allCur:'جميع العملات',
+    ct1:'توزيع حالة الشحنات', cs1:'نسب الحالات الحالية',
+    ct2:'قيمة المشتريات الشهرية', cs2:'إجمالي الفواتير شهرياً (مكافئ USD)',
+    ct3:'أكبر الموردين بالقيمة', cs3:'ترتيب الموردين حسب إجمالي المشتريات',
+    ct4:'توزيع العملات', cs4:'المشتريات حسب نوع العملة',
+    ct5:'توقعات الوصول — ٤ أسابيع', cs5:'عدد الحاويات المتوقع وصولها',
+    ct6:'تحليل التأخير بالمورد', cs6:'متوسط أيام التأخير',
+    ct7:'اتجاه أوقات التسليم', cs7:'متوسط أيام التسليم — آخر ٨ أشهر',
+    insTitle:'الرؤى والتوصيات',
+    refBtn:'تحديث البيانات',
+    noData:'لا توجد بيانات',
+    weekLabels:['الأسبوع ١','الأسبوع ٢','الأسبوع ٣','الأسبوع ٤'],
+    months:['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],
+    showingX:'عرض', ofX:'من', recordsX:'سجل',
+    delAlertT:'شحنات متأخرة', soonAlertT:'تصل خلال ٧ أيام', arrAlertT:'وصلت حديثاً',
+    noAlerts:'لا توجد تنبيهات حالياً — جميع الشحنات على المسار الصحيح',
+    finSumT:'الملخص المالي', shipSumT:'ملخص الشحنات', topSupT:'أكبر ٥ موردين بالقيمة',
+    sh1:'ربط Google Sheets', sh2:'الدور الوظيفي', sh3:'هوية الشركة',
+    repTitles:['تقرير حالة الشحنات','تقرير الشحنات المتأخرة','تقرير أداء الموردين','تقرير المشتريات الشهرية','توقعات وصول الحاويات','تقرير تحليل العملات'],
+    repDescs:['نظرة عامة على جميع الحاويات حسب الحالة','قائمة الشحنات المتأخرة مع تحليل الأسباب','ترتيب الموردين حسب القيمة والالتزام بالمواعيد','قيم الفواتير مجمّعة حسب الشهر والعملة','الوصولات المتوقعة للـ ٣٠ و٦٠ و٩٠ يوماً القادمة','توزيع المشتريات وتعرض الصرف الأجنبي بالعملة'],
+  },
+  en:{
+    loading:'Loading data from Google Sheets…',
+    connected:'Connected', disconnected:'Disconnected', refreshing:'Refreshing…',
+    lastUpd:'Last updated:', nextUpd:'Next refresh:',
+    refresh:'Refresh', exec:'Executive Summary', excel:'Export Excel', print:'Print / PDF',
+    alerts:'🔔 Smart Alerts',
+    sl1:'MAIN', sl2:'REPORTS', sl3:'SETTINGS',
+    navDash:'Dashboard', navTrack:'Shipments', navAnal:'Analytics',
+    navSumm:'Executive Summary', navRep:'Reports', navSet:'Settings',
+    dashT:'Dashboard', dashS:'Real-time shipment and invoice monitoring',
+    trackT:'Shipment Tracking', trackS:'All purchase invoices and containers',
+    analT:'Analytics', analS:'Deep-dive shipment and supplier analysis',
+    summT:'Executive Summary', summS:'Auto-generated insights for leadership',
+    repT:'Reports', repS:'Generate and export business reports',
+    setT:'Settings', setS:'Configure data source and preferences',
+    langLbl:'عربي', roleLabel:'Manager',
+    roles:{accountant:'Accountant',manager:'Manager',executive:'Executive'},
+    kpiLbls:['Total Invoices','Total Value (USD)','In Transit','Arrived','Delayed','Arriving This Week','Arriving This Month','Avg. Delivery Days'],
+    statuses:{Arrived:'Arrived','In Transit':'In Transit',Delayed:'Delayed','Customs Clearance':'Customs Clearance',Pending:'Pending','في الطريق':'In Transit','وصلت':'Arrived','متأخرة':'Delayed','الجمارك':'Customs Clearance','معلقة':'Pending'},
+    thdr:['Invoice #','Supplier','Amount','Currency','BL Number','Container','Expected Arrival','Remaining','Delay','Status','Notes'],
+    allStat:'All Status', allSup:'All Suppliers', allCur:'All Currencies',
+    ct1:'Shipment Status Distribution', cs1:'Current status breakdown',
+    ct2:'Monthly Purchase Value', cs2:'Invoice totals by month (USD equiv.)',
+    ct3:'Top Suppliers by Value', cs3:'Purchase value ranking',
+    ct4:'Currency Distribution', cs4:'Purchases by currency type',
+    ct5:'Arrival Forecast — Next 4 Weeks', cs5:'Expected container arrivals per week',
+    ct6:'Delay Analysis by Supplier', cs6:'Average delay days per supplier',
+    ct7:'Delivery Time Trend', cs7:'Average delivery days — last 8 months',
+    insTitle:'Key Insights & Recommendations',
+    refBtn:'Refresh Data',
+    noData:'No data available',
+    weekLabels:['Week 1','Week 2','Week 3','Week 4'],
+    months:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    showingX:'Showing', ofX:'of', recordsX:'records',
+    delAlertT:'Delayed Shipments', soonAlertT:'Arriving Within 7 Days', arrAlertT:'Recently Arrived',
+    noAlerts:'No alerts — all shipments are on track',
+    finSumT:'Financial Summary', shipSumT:'Shipment Summary', topSupT:'Top 5 Suppliers by Value',
+    sh1:'Google Sheets Connection', sh2:'User Role', sh3:'Company Branding',
+    repTitles:['Shipment Status Report','Delayed Shipments Report','Supplier Performance Report','Monthly Purchase Report','Container Arrival Forecast','Currency Analysis Report'],
+    repDescs:['Complete status overview of all containers','All delayed shipments with root cause analysis','Ranking by value, volume, and on-time delivery','Invoice values aggregated by month and currency','Predicted arrivals for next 30, 60, and 90 days','Purchase distribution and FX exposure by currency'],
+  }
+};
+const t = k => (TR[S.lang][k] !== undefined ? TR[S.lang][k] : k);
+
+// ═══════════════════════════════════════
+// CSV PARSER
+// ═══════════════════════════════════════
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g,'').trim());
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const vals = [];
+    let cur = '', inQ = false;
+    for (let c of lines[i]) {
+      if (c==='"') inQ=!inQ;
+      else if (c===',' && !inQ) { vals.push(cur.trim()); cur=''; }
+      else cur+=c;
+    }
+    vals.push(cur.trim());
+    if (vals.every(v=>!v)) continue;
+    const row = {};
+    headers.forEach((h,j) => { row[h] = (vals[j]||'').replace(/^"|"$/g,'').trim(); });
+    rows.push(row);
+  }
+  return rows;
+}
+
+// Map sheet columns → internal fields
+function mapRow(r, idx) {
+  // detect columns by Arabic or English header patterns
+  const keys = Object.keys(r);
+  const get = (...patterns) => {
+    for (const p of patterns) {
+      const k = keys.find(k => k.toLowerCase().includes(p.toLowerCase()));
+      if (k && r[k]) return r[k];
+    }
+    return '';
+  };
+  const entryDate   = get('تاريخ','entry','date') || '';
+  const invNum      = get('فاتورة','invoice num','inv') || `INV-${String(idx+1).padStart(4,'0')}`;
+  const supplier    = get('مورد','supplier','vendor') || '';
+  const invAmt      = parseFloat((get('مبلغ','amount','value','قيمة')||'0').replace(/[^0-9.]/g,''))||0;
+  const currency    = get('عملة','currency','curr') || 'USD';
+  const blNum       = get('بوليصة','bl ','b/l','bl#','رقم ب') || '';
+  const container   = get('حاوية','container','cont') || '';
+  const eta         = get('وصول','arrival','eta','expected') || '';
+  const status      = get('حالة','status','state') || 'In Transit';
+  const notes       = get('ملاحظات','notes','note','remarks') || '';
+  const remaining   = parseInt(get('متبقي','remaining','days rem')||'0')||0;
+  const delay       = parseInt(get('تأخير','delay','late')||'0')||0;
+  return { entryDate, invoiceNumber:invNum, supplier, invoiceAmount:invAmt, currency, blNumber:blNum, containerNumber:container, expectedArrival:eta, shipmentStatus:status, notes, remainingDays:remaining, delayDays:delay };
+}
+
+// ═══════════════════════════════════════
+// LOAD FROM GOOGLE SHEETS
+// ═══════════════════════════════════════
+async function loadFromSheets(manual=false) {
+  const url = document.getElementById('gurl').value.trim() || S.csvUrl;
+  S.csvUrl = url;
+  setSrcStatus('loading');
+  if (manual) showNotif(t('loading'),'am');
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    const text = await res.text();
+    const raw = parseCSV(text);
+    if (!raw.length) throw new Error('empty');
+    S.data = raw.map(mapRow).filter(r => r.supplier || r.invoiceNumber);
+    S.filtered = [...S.data];
+    setSrcStatus('ok');
+    populateFilters();
+    renderAll();
+    const now = new Date();
+    document.getElementById('lastUpd').textContent = t('lastUpd')+' '+now.toLocaleTimeString(S.lang==='ar'?'ar-EG':'en-US');
+    const cstat = document.getElementById('cstat');
+    if (cstat) { cstat.style.display='block'; cstat.style.background='var(--green-bg)'; cstat.style.color='var(--green)'; cstat.textContent='✓ '+t('connected')+' — '+S.data.length+' '+(S.lang==='ar'?'سجل':'records'); }
+    if (manual) showNotif((S.lang==='ar'?'تم التحميل بنجاح: ':'Loaded: ')+S.data.length+(S.lang==='ar'?' سجل':' records'),'gn');
+  } catch(e) {
+    setSrcStatus('err');
+    const cstat = document.getElementById('cstat');
+    if (cstat) { cstat.style.display='block'; cstat.style.background='var(--red-bg)'; cstat.style.color='var(--red)'; cstat.textContent='✗ '+(S.lang==='ar'?'خطأ في الاتصال: ':'Connection error: ')+e.message; }
+    if (!S.data.length) { S.data=genDemo(); S.filtered=[...S.data]; populateFilters(); renderAll(); }
+    showNotif((S.lang==='ar'?'تعذّر الاتصال — عرض بيانات تجريبية':'Failed to connect — showing demo data'),'or');
+  }
+}
+
+function setSrcStatus(s) {
+  const dot = document.getElementById('srcDot');
+  const txt = document.getElementById('srcTxt');
+  if (s==='ok') { dot.className='dot'; txt.textContent=t('connected'); }
+  else if (s==='err') { dot.className='dot err'; txt.textContent=t('disconnected'); }
+  else { dot.className='dot loading'; txt.textContent=t('refreshing'); }
+}
+
+// ═══════════════════════════════════════
+// DEMO DATA FALLBACK
+// ═══════════════════════════════════════
+function genDemo() {
+  const sups=['Al-Mansour Trading','Guangzhou Imports','Seoul Tech Ltd','Dubai Logistics','London Goods Ltd','Shanghai Exports','Cairo Supplies','Riyadh Partners'];
+  const curs=['USD','EUR','GBP','SAR','AED','CNY','GHS'];
+  const stats=['In Transit','Arrived','Delayed','Customs Clearance','Pending'];
+  const now=new Date(); const data=[];
+  for(let i=0;i<40;i++){
+    const entry=new Date(now-Math.random()*80*864e5);
+    const dta=Math.floor(Math.random()*60)-10;
+    const eta=new Date(now.getTime()+dta*864e5);
+    const st=stats[Math.floor(Math.random()*stats.length)];
+    const delay=st==='Delayed'?Math.floor(Math.random()*15)+1:0;
+    data.push({entryDate:entry.toISOString().split('T')[0],invoiceNumber:'INV-2025-'+String(i+1).padStart(4,'0'),supplier:sups[i%sups.length],invoiceAmount:Math.round((Math.random()*200000+5000)*10)/10,currency:curs[i%curs.length],blNumber:'BL'+Math.floor(Math.random()*9e8+1e8),containerNumber:'MSCU'+Math.floor(Math.random()*9e6+1e6)+'0',expectedArrival:eta.toISOString().split('T')[0],shipmentStatus:st,notes:'—',remainingDays:Math.max(0,dta),delayDays:delay});
+  }
+  return data;
+}
+
+function toUSD(r) {
+  const rates={USD:1,EUR:1.09,GBP:1.27,SAR:0.267,AED:0.272,CNY:0.14,GHS:0.08};
+  return r.invoiceAmount*(rates[r.currency]||1);
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+window.addEventListener('DOMContentLoaded',()=>{
+  applyLang();
+  document.getElementById('ltxt').textContent = t('loading');
+  loadFromSheets().then(()=>{
+    document.getElementById('lov').style.display='none';
+    startTimer();
+  });
+});
+
+// ═══════════════════════════════════════
+// RENDER ALL
+// ═══════════════════════════════════════
+function renderAll(){
+  renderKPIs(); renderAlerts(); renderTbl(); renderSumm(); renderRep();
+  destroyCharts();
+  setTimeout(()=>{ renderDashCharts(); renderAnalCharts(); },100);
+}
+
+// ═══════════════════════════════════════
+// LANGUAGE / THEME
+// ═══════════════════════════════════════
+function toggleLang(){
+  S.lang=S.lang==='ar'?'en':'ar';
+  applyLang();
+  renderAll();
+}
+function applyLang(){
+  const isAr=S.lang==='ar';
+  document.documentElement.lang=S.lang;
+  document.documentElement.dir=isAr?'rtl':'ltr';
+  const q=id=>document.getElementById(id);
+  q('llbl').textContent=t('langLbl');
+  q('rtxt').textContent=t('refresh');
+  q('atit').textContent=t('alerts');
+  q('sl1').textContent=t('sl1'); q('sl2').textContent=t('sl2'); q('sl3').textContent=t('sl3');
+  q('nl-dash').textContent=t('navDash'); q('nl-track').textContent=t('navTrack');
+  q('nl-anal').textContent=t('navAnal'); q('nl-summ').textContent=t('navSumm');
+  q('nl-rep').textContent=t('navRep'); q('nl-set').textContent=t('navSet');
+  q('t-dash').textContent=t('dashT'); q('s-dash').textContent=t('dashS');
+  q('t-track').textContent=t('trackT'); q('s-track').textContent=t('trackS');
+  q('t-anal').textContent=t('analT'); q('s-anal').textContent=t('analS');
+  q('t-summ').textContent=t('summT'); q('s-summ').textContent=t('summS');
+  q('t-rep').textContent=t('repT'); q('s-rep').textContent=t('repS');
+  q('t-set').textContent=t('setT'); q('s-set').textContent=t('setS');
+  q('btn-ref').textContent=t('refBtn'); q('btn-exec').textContent=t('exec');
+  q('btn-xl').textContent=t('excel'); q('btn-pr').textContent=t('print');
+  q('btn-prt').textContent=t('print'); q('btn-xls').textContent=t('excel');
+  q('btn-sav').textContent=isAr?'حفظ وتطبيق':'Save & Apply';
+  q('btn-tst').textContent=isAr?'اختبار الاتصال':'Test Connection';
+  q('btn-logo').textContent=isAr?'رفع الشعار':'Upload Logo';
+  q('r-acc').textContent=TR[S.lang].roles.accountant;
+  q('r-mgr').textContent=TR[S.lang].roles.manager;
+  q('r-exe').textContent=TR[S.lang].roles.executive;
+  q('rlbl').textContent=TR[S.lang].roles[S.role]||TR[S.lang].roles.manager;
+  q('sh1').textContent=t('sh1'); q('sh2').textContent=t('sh2'); q('sh3').textContent=t('sh3');
+  q('sl-url').textContent=isAr?'رابط الجدول (CSV منشور)':'Spreadsheet URL (Published CSV)';
+  q('sl-int').textContent=isAr?'فترة التحديث (دقائق)':'Refresh interval (minutes)';
+  q('sl-co').textContent=isAr?'اسم الشركة':'Company Name';
+  q('fo-all').textContent=t('allStat'); q('fo-sup').textContent=t('allSup'); q('fo-cur').textContent=t('allCur');
+  q('ct1').textContent=t('ct1'); q('cs1').textContent=t('cs1');
+  q('ct2').textContent=t('ct2'); q('cs2').textContent=t('cs2');
+  q('ct3').textContent=t('ct3'); q('cs3').textContent=t('cs3');
+  q('ct4').textContent=t('ct4'); q('cs4').textContent=t('cs4');
+  q('ct5').textContent=t('ct5'); q('cs5').textContent=t('cs5');
+  q('ct6').textContent=t('ct6'); q('cs6').textContent=t('cs6');
+  q('ct7').textContent=t('ct7'); q('cs7').textContent=t('cs7');
+  q('t-ins').textContent=t('insTitle');
+  const srch=q('srch'); if(srch) srch.placeholder=isAr?'بحث في الفواتير والموردين والحاويات...':'Search invoices, suppliers, containers...';
+  renderTblHead();
+}
+
+function toggleTheme(){
+  S.theme=S.theme==='dark'?'light':'dark';
+  document.getElementById('app').className=S.theme==='light'?'lm':'';
+  document.getElementById('tbtn').innerHTML=S.theme==='dark'?'<i class="ti ti-moon"></i>':'<i class="ti ti-sun"></i>';
+  destroyCharts(); setTimeout(()=>{ renderDashCharts(); renderAnalCharts(); },100);
+}
+
+// ═══════════════════════════════════════
+// PAGE NAV
+// ═══════════════════════════════════════
+function nav(id,el){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('act'));
+  document.querySelectorAll('.sitem').forEach(s=>s.classList.remove('act'));
+  document.getElementById('pg-'+id).classList.add('act');
+  if(el) el.classList.add('act');
+}
+
+// ═══════════════════════════════════════
+// KPIs
+// ═══════════════════════════════════════
+function normStatus(s){
+  const map={'في الطريق':'In Transit','وصلت':'Arrived','متأخرة':'Delayed','الجمارك':'Customs Clearance','معلقة':'Pending'};
+  return map[s]||s;
+}
+function renderKPIs(){
+  const d=S.data; const now=new Date();
+  const w7=new Date(now.getTime()+7*864e5), m30=new Date(now.getTime()+30*864e5);
+  const tv=d.reduce((s,r)=>s+toUSD(r),0);
+  const inT=d.filter(r=>normStatus(r.shipmentStatus)==='In Transit').length;
+  const arr=d.filter(r=>normStatus(r.shipmentStatus)==='Arrived').length;
+  const del=d.filter(r=>normStatus(r.shipmentStatus)==='Delayed'||r.delayDays>0).length;
+  const wk=d.filter(r=>{const a=new Date(r.expectedArrival);return a>now&&a<=w7&&normStatus(r.shipmentStatus)!=='Arrived';}).length;
+  const mo=d.filter(r=>{const a=new Date(r.expectedArrival);return a>now&&a<=m30&&normStatus(r.shipmentStatus)!=='Arrived';}).length;
+  const aD=d.filter(r=>normStatus(r.shipmentStatus)==='Arrived');
+  const avg=aD.length?Math.round(aD.reduce((s,r)=>s+Math.abs((new Date(r.expectedArrival)-new Date(r.entryDate))/864e5),0)/aD.length):0;
+  const lbls=t('kpiLbls');
+  const kpis=[
+    {v:d.length,l:lbls[0],i:'ti-file-invoice',c:'kb',tr:(S.lang==='ar'?'إجمالي السجلات':'Total records'),dir:'nt'},
+    {v:'$'+Math.round(tv/1000).toLocaleString()+'K',l:lbls[1],i:'ti-currency-dollar',c:'kg',tr:'+12%',dir:'up'},
+    {v:inT,l:lbls[2],i:'ti-ship',c:'kb',tr:(S.lang==='ar'?'حاوية نشطة':'active containers'),dir:'nt'},
+    {v:arr,l:lbls[3],i:'ti-circle-check',c:'kg',tr:(S.lang==='ar'?'في الوقت':'on time')+': '+(d.length?Math.round(arr/d.length*100):0)+'%',dir:'up'},
+    {v:del,l:lbls[4],i:'ti-alert-triangle',c:'kr',tr:del>0?(S.lang==='ar'?'يحتاج متابعة':'Needs attention'):(S.lang==='ar'?'لا توجد':'All clear'),dir:del>0?'dn':'up'},
+    {v:wk,l:lbls[5],i:'ti-calendar-week',c:'ko',tr:S.lang==='ar'?'الأيام السبعة القادمة':'Next 7 days',dir:'nt'},
+    {v:mo,l:lbls[6],i:'ti-calendar-month',c:'kp',tr:S.lang==='ar'?'الثلاثون يوماً القادمة':'Next 30 days',dir:'nt'},
+    {v:avg+(S.lang==='ar'?' يوم':' d'),l:lbls[7],i:'ti-clock',c:'kt',tr:(S.lang==='ar'?'المعيار: ٣٥ يوم':'Benchmark: 35d'),dir:avg>0&&avg<35?'up':'dn'},
+  ];
+  document.getElementById('kgrid').innerHTML=kpis.map(k=>`
+    <div class="kcard ${k.c}">
+      <div class="kico ${k.c}"><i class="ti ${k.i}" aria-hidden="true"></i></div>
+      <div class="kval">${k.v}</div>
+      <div class="klbl">${k.l}</div>
+      <div class="ktrd ${k.dir}"><i class="ti ti-trending-${k.dir==='nt'?'up':k.dir}" aria-hidden="true"></i> ${k.tr}</div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════
+// ALERTS
+// ═══════════════════════════════════════
+function renderAlerts(){
+  const d=S.data; const now=new Date();
+  const delayed=d.filter(r=>r.delayDays>0||normStatus(r.shipmentStatus)==='Delayed');
+  const soon=d.filter(r=>{const a=new Date(r.expectedArrival);const df=(a-now)/864e5;return df>=0&&df<=7&&normStatus(r.shipmentStatus)!=='Arrived';});
+  const arrived=d.filter(r=>normStatus(r.shipmentStatus)==='Arrived').slice(-3);
+  const alerts=[];
+  if(delayed.length) alerts.push({t:'rd',ic:'ti-alert-circle',title:t('delAlertT')+' ('+delayed.length+')',body:delayed.slice(0,3).map(r=>r.invoiceNumber+(r.supplier?' — '+r.supplier:'')+(r.delayDays>0?' (+'+r.delayDays+(S.lang==='ar'?' يوم)':', days)'):')')).join(' · ')});
+  if(soon.length) alerts.push({t:'or',ic:'ti-bell-ringing',title:t('soonAlertT')+' ('+soon.length+')',body:soon.slice(0,3).map(r=>(r.containerNumber||r.invoiceNumber)+(r.supplier?' — '+r.supplier:'')+' | '+r.expectedArrival).join(' · ')});
+  if(arrived.length) alerts.push({t:'gn',ic:'ti-circle-check',title:t('arrAlertT')+' ('+arrived.length+')',body:arrived.map(r=>r.invoiceNumber+(r.supplier?' — '+r.supplier:'')).join(' · ')});
+  document.getElementById('agrid').innerHTML=alerts.length
+    ?alerts.map(a=>`<div class="alrt ${a.t}"><i class="ti ${a.ic} aico" aria-hidden="true"></i><div><div class="atit">${a.title}</div><div class="abody">${a.body}</div></div></div>`).join('')
+    :`<div class="alrt gn"><i class="ti ti-circle-check aico" aria-hidden="true"></i><div><div class="atit">${t('noAlerts')}</div></div></div>`;
+}
+
+// ═══════════════════════════════════════
+// TABLE
+// ═══════════════════════════════════════
+function populateFilters(){
+  const sups=[...new Set(S.data.map(r=>r.supplier).filter(Boolean))].sort();
+  const curs=[...new Set(S.data.map(r=>r.currency).filter(Boolean))];
+  const stats=[...new Set(S.data.map(r=>r.shipmentStatus).filter(Boolean))];
+  const spF=document.getElementById('spFlt');
+  const crF=document.getElementById('crFlt');
+  const stF=document.getElementById('stFlt');
+  spF.innerHTML=`<option value="">${t('allSup')}</option>`+sups.map(s=>`<option>${s}</option>`).join('');
+  crF.innerHTML=`<option value="">${t('allCur')}</option>`+curs.map(c=>`<option>${c}</option>`).join('');
+  stF.innerHTML=`<option value="">${t('allStat')}</option>`+stats.map(s=>`<option>${s}</option>`).join('');
+}
+function renderTblHead(){
+  const hdrs=t('thdr');
+  document.getElementById('thead').innerHTML='<tr>'+hdrs.map((h,i)=>`<th onclick="sortBy('${['invoiceNumber','supplier','invoiceAmount','currency','blNumber','containerNumber','expectedArrival','remainingDays','delayDays','shipmentStatus','notes'][i]}')">${h} <i class="ti ti-arrows-sort" style="font-size:9px"></i></th>`).join('')+'</tr>';
+}
+function filterTbl(){
+  const q=document.getElementById('srch').value.toLowerCase();
+  const sf=document.getElementById('stFlt').value;
+  const sp=document.getElementById('spFlt').value;
+  const cr=document.getElementById('crFlt').value;
+  S.filtered=S.data.filter(r=>{
+    const m=!q||(r.invoiceNumber+r.supplier+r.containerNumber+r.blNumber+r.notes).toLowerCase().includes(q);
+    return m&&(!sf||r.shipmentStatus===sf)&&(!sp||r.supplier===sp)&&(!cr||r.currency===cr);
+  });
+  S.pg=1; renderTbl();
+}
+function sortBy(col){
+  if(S.sc===col)S.sd*=-1;else{S.sc=col;S.sd=1;}
+  S.filtered.sort((a,b)=>{const va=a[col],vb=b[col];return(typeof va==='string'?va.localeCompare(vb,S.lang):(va-vb))*S.sd;});
+  renderTbl();
+}
+function renderTbl(){
+  renderTblHead();
+  const rows=S.filtered;
+  const st=(S.pg-1)*S.pp, en=st+S.pp;
+  document.getElementById('tbody').innerHTML=rows.slice(st,en).map(r=>{
+    const ns=normStatus(r.shipmentStatus);
+    const dc=r.delayDays>0?'r':r.remainingDays<=7&&ns!=='Arrived'?'o':ns==='Arrived'?'g':'b';
+    const sc={Arrived:'arr','In Transit':'trn',Delayed:'del','Customs Clearance':'cst',Pending:'pnd'}[ns]||'pnd';
+    const stLabel=TR[S.lang].statuses[r.shipmentStatus]||r.shipmentStatus;
+    return`<tr>
+      <td style="font-weight:600;color:var(--blue)">${r.invoiceNumber}</td>
+      <td>${r.supplier||'—'}</td>
+      <td style="text-align:end;font-weight:600">${(r.invoiceAmount||0).toLocaleString(S.lang==='ar'?'ar-EG':'en-US',{maximumFractionDigits:0})}</td>
+      <td><span class="bdg ${sc}" style="font-size:10px;padding:2px 6px">${r.currency||'—'}</span></td>
+      <td style="font-family:monospace;font-size:11px;color:var(--text2)">${r.blNumber||'—'}</td>
+      <td style="font-family:monospace;font-size:11px;color:var(--text2)">${r.containerNumber||'—'}</td>
+      <td>${r.expectedArrival||'—'}</td>
+      <td><span class="dys ${dc}">${ns==='Arrived'?'✓':(r.remainingDays||0)+(S.lang==='ar'?'ي':'d')}</span></td>
+      <td>${r.delayDays>0?`<span class="dys r">+${r.delayDays}${S.lang==='ar'?'ي':'d'}</span>`:'<span style="color:var(--text3)">—</span>'}</td>
+      <td><span class="bdg ${sc}">${stLabel}</span></td>
+      <td style="font-size:11px;color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis" title="${r.notes||''}">${r.notes||'—'}</td>
+    </tr>`;
+  }).join('');
+  const total=rows.length, pages=Math.ceil(total/S.pp)||1;
+  const sh=t('showingX'), of=t('ofX'), rc=t('recordsX');
+  document.getElementById('pginfo').textContent=`${sh} ${Math.min(st+1,total)}–${Math.min(en,total)} ${of} ${total} ${rc}`;
+  let btns=`<button class="pgb" onclick="goP(${S.pg-1})" ${S.pg===1?'disabled':''}><i class="ti ti-chevron-${S.lang==='ar'?'right':'left'}" style="font-size:12px"></i></button>`;
+  for(let i=1;i<=pages;i++){
+    if(i===1||i===pages||Math.abs(i-S.pg)<=1) btns+=`<button class="pgb ${i===S.pg?'act':''}" onclick="goP(${i})">${i}</button>`;
+    else if(Math.abs(i-S.pg)===2) btns+=`<button class="pgb" disabled style="opacity:.4">…</button>`;
+  }
+  btns+=`<button class="pgb" onclick="goP(${S.pg+1})" ${S.pg===pages?'disabled':''}><i class="ti ti-chevron-${S.lang==='ar'?'left':'right'}" style="font-size:12px"></i></button>`;
+  document.getElementById('pgbtns').innerHTML=btns;
+}
+function goP(p){const max=Math.ceil(S.filtered.length/S.pp)||1;if(p<1||p>max)return;S.pg=p;renderTbl();}
+
+// ═══════════════════════════════════════
+// CHARTS
+// ═══════════════════════════════════════
+function isDk(){return S.theme==='dark';}
+function CC(){
+  return isDk()
+    ?{grid:'rgba(255,255,255,.05)',tick:'#5a6480',bg:'#1e2537',bd:'#2a3348',txt:'#e8eaf0'}
+    :{grid:'rgba(0,0,0,.05)',tick:'#8a96b0',bg:'#ffffff',bd:'#dde3f0',txt:'#1a2035'};
+}
+function ttOpts(){const c=CC();return{backgroundColor:c.bg,borderColor:c.bd,borderWidth:1,titleColor:c.txt,bodyColor:c.txt,padding:8};}
+function sOpts(){const c=CC();return{grid:{color:c.grid},ticks:{color:c.tick,font:{size:10}},border:{color:'transparent'}};}
+function destroyCharts(){Object.values(S.charts).forEach(c=>{try{c.destroy();}catch(e){}});S.charts={};}
+
+function renderDashCharts(){
+  const d=S.data;
+  if(!d.length) return;
+  // Status donut
+  const stMap={};
+  d.forEach(r=>{const ns=normStatus(r.shipmentStatus);stMap[ns]=(stMap[ns]||0)+1;});
+  const sL=Object.keys(stMap), sV=sL.map(k=>stMap[k]);
+  const sCols=['#3b82f6','#22c55e','#ef4444','#f97316','#eab308'];
+  const sLabels=sL.map(s=>TR[S.lang].statuses[s]||s);
+  document.getElementById('sleg').innerHTML=sLabels.map((l,i)=>`<span class="li"><span class="ld" style="background:${sCols[i]}"></span>${l}: ${sV[i]}</span>`).join('');
+  S.charts.st=new Chart(document.getElementById('cStatus'),{type:'doughnut',data:{labels:sLabels,datasets:[{data:sV,backgroundColor:sCols,borderWidth:2,borderColor:isDk()?'#161b27':'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false},tooltip:ttOpts()}}});
+  // Monthly bar
+  const mo={};
+  d.forEach(r=>{if(!r.entryDate)return;const m=r.entryDate.substring(0,7);mo[m]=(mo[m]||0)+toUSD(r);});
+  const mk=Object.keys(mo).sort().slice(-8);
+  const mons=t('months');
+  const mlabs=mk.map(k=>{const[y,m]=k.split('-');return(mons[+m-1]||m)+" '"+(y||'').slice(2);});
+  S.charts.mo=new Chart(document.getElementById('cMonthly'),{type:'bar',data:{labels:mlabs,datasets:[{data:mk.map(k=>Math.round(mo[k]/1000)),backgroundColor:'#3b82f6',borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...ttOpts(),callbacks:{label:v=>'$'+v.raw+'K'}}},scales:{x:{...sOpts(),ticks:{...sOpts().ticks,autoSkip:false,maxRotation:35}},y:{...sOpts(),ticks:{...sOpts().ticks,callback:v=>'$'+v+'K'}}}}});
+  // Supplier bar
+  const supM={};
+  d.forEach(r=>{if(r.supplier)supM[r.supplier]=(supM[r.supplier]||0)+toUSD(r);});
+  const supS=Object.entries(supM).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  const supH=Math.max(220,supS.length*42+60);
+  document.getElementById('cSupplier').parentElement.style.height=supH+'px';
+  const supCols=['#3b82f6','#a855f7','#22c55e','#f97316','#14b8a6','#ef4444','#eab308'];
+  S.charts.sup=new Chart(document.getElementById('cSupplier'),{type:'bar',data:{labels:supS.map(([s])=>s.length>20?s.slice(0,18)+'…':s),datasets:[{data:supS.map(([,v])=>Math.round(v/1000)),backgroundColor:supCols,borderRadius:4,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...ttOpts(),callbacks:{label:v=>'$'+v.raw+'K'}}},scales:{x:{...sOpts(),ticks:{...sOpts().ticks,callback:v=>'$'+v+'K'}},y:{...sOpts(),grid:{display:false}}}}});
+  // Currency pie
+  const curM={};
+  d.forEach(r=>{if(r.currency)curM[r.currency]=(curM[r.currency]||0)+1;});
+  const cL=Object.keys(curM),cV=cL.map(k=>curM[k]);
+  const cCols=['#3b82f6','#22c55e','#f97316','#a855f7','#14b8a6','#eab308','#ef4444'];
+  document.getElementById('cleg').innerHTML=cL.map((l,i)=>`<span class="li"><span class="ld" style="background:${cCols[i]}"></span>${l}: ${d.length?Math.round(cV[i]/d.length*100):0}%</span>`).join('');
+  S.charts.cr=new Chart(document.getElementById('cCurr'),{type:'pie',data:{labels:cL,datasets:[{data:cV,backgroundColor:cCols,borderWidth:2,borderColor:isDk()?'#161b27':'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...ttOpts(),callbacks:{label:v=>`${v.label}: ${v.raw} (${d.length?Math.round(v.raw/d.length*100):0}%)`}}}}});
+}
+
+function renderAnalCharts(){
+  const d=S.data; if(!d.length) return;
+  const now=new Date();
+  const wlabs=t('weekLabels');
+  const wkD=wlabs.map((_,i)=>{const ws=new Date(now.getTime()+i*7*864e5),we=new Date(ws.getTime()+7*864e5);return d.filter(r=>{const a=new Date(r.expectedArrival);return a>=ws&&a<we&&normStatus(r.shipmentStatus)!=='Arrived';}).length;});
+  S.charts.fc=new Chart(document.getElementById('cForecast'),{type:'bar',data:{labels:wlabs,datasets:[{data:wkD,backgroundColor:['rgba(59,130,246,.8)','rgba(59,130,246,.65)','rgba(59,130,246,.5)','rgba(59,130,246,.4)'],borderColor:'#3b82f6',borderWidth:2,borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:ttOpts()},scales:{x:{...sOpts()},y:{...sOpts(),ticks:{...sOpts().ticks,stepSize:1}}}}});
+  const delM={};
+  d.forEach(r=>{if(r.supplier){if(!delM[r.supplier])delM[r.supplier]=[];delM[r.supplier].push(r.delayDays||0);}});
+  const delA=Object.entries(delM).map(([s,v])=>({s,avg:Math.round(v.reduce((a,b)=>a+b,0)/v.length*10)/10})).sort((a,b)=>b.avg-a.avg).slice(0,7);
+  const delH=Math.max(220,delA.length*42+60);
+  document.getElementById('cDelay').parentElement.style.height=delH+'px';
+  S.charts.dl=new Chart(document.getElementById('cDelay'),{type:'bar',data:{labels:delA.map(x=>x.s.length>20?x.s.slice(0,18)+'…':x.s),datasets:[{data:delA.map(x=>x.avg),backgroundColor:delA.map(x=>x.avg>4?'#ef4444':x.avg>1?'#f97316':'#22c55e'),borderRadius:4,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...ttOpts(),callbacks:{label:v=>v.raw+(S.lang==='ar'?' يوم متوسط':'d avg')}}},scales:{x:{...sOpts()},y:{...sOpts(),grid:{display:false}}}}});
+  const mth={};
+  d.forEach(r=>{if(!r.entryDate)return;const m=r.entryDate.substring(0,7);if(!mth[m])mth[m]=[];mth[m].push(Math.abs((new Date(r.expectedArrival)-new Date(r.entryDate))/864e5));});
+  const mk2=Object.keys(mth).sort().slice(-8);
+  const mons=t('months');
+  const ml2=mk2.map(k=>{const[y,m]=k.split('-');return(mons[+m-1]||m)+" '"+(y||'').slice(2);});
+  S.charts.tr=new Chart(document.getElementById('cTrend'),{type:'line',data:{labels:ml2,datasets:[{data:mk2.map(k=>Math.round(mth[k].reduce((a,b)=>a+b,0)/mth[k].length)),borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.08)',tension:.4,fill:true,pointRadius:4,pointBackgroundColor:'#3b82f6',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...ttOpts(),callbacks:{label:v=>v.raw+(S.lang==='ar'?' يوم':' d')}}},scales:{x:{...sOpts(),ticks:{...sOpts().ticks,autoSkip:false,maxRotation:35}},y:{...sOpts(),ticks:{...sOpts().ticks,callback:v=>v+(S.lang==='ar'?'ي':'d')}}}}});
+}
+
+// ═══════════════════════════════════════
+// EXECUTIVE SUMMARY
+// ═══════════════════════════════════════
+function renderSumm(){
+  const d=S.data; if(!d.length){document.getElementById('sgrid').innerHTML='';document.getElementById('inslist').innerHTML='';return;}
+  const tv=d.reduce((s,r)=>s+toUSD(r),0);
+  const supM={};d.forEach(r=>{if(r.supplier)supM[r.supplier]=(supM[r.supplier]||0)+toUSD(r);});
+  const topS=Object.entries(supM).sort((a,b)=>b[1]-a[1]);
+  const delayed=d.filter(r=>r.delayDays>0);
+  const maxDel=delayed.length?delayed.reduce((m,r)=>r.delayDays>m.delayDays?r:m,delayed[0]):null;
+  const aD=d.filter(r=>normStatus(r.shipmentStatus)==='Arrived');
+  const avgD=aD.length?Math.round(aD.reduce((s,r)=>s+Math.abs((new Date(r.expectedArrival)-new Date(r.entryDate))/864e5),0)/aD.length):0;
+  const now=new Date();
+  const soon=d.filter(r=>{const a=new Date(r.expectedArrival);return(a-now)/864e5<=14&&normStatus(r.shipmentStatus)!=='Arrived';}).length;
+  const isAr=S.lang==='ar';
+  const finRows=isAr?[['إجمالي الفواتير',d.length],['إجمالي القيمة (USD)','$'+Math.round(tv/1000).toLocaleString()+'K'],['أكبر فاتورة','$'+Math.round(Math.max(...d.map(r=>r.invoiceAmount||0))).toLocaleString()],['متوسط الفاتورة','$'+Math.round(tv/d.length).toLocaleString()]]
+    :[['Total Invoices',d.length],['Total Value (USD Equiv.)','$'+Math.round(tv/1000).toLocaleString()+'K'],['Largest Invoice','$'+Math.round(Math.max(...d.map(r=>r.invoiceAmount||0))).toLocaleString()],['Average Invoice','$'+Math.round(tv/d.length).toLocaleString()]];
+  const shipRows=isAr?[['في الطريق',d.filter(r=>normStatus(r.shipmentStatus)==='In Transit').length],['وصلت',d.filter(r=>normStatus(r.shipmentStatus)==='Arrived').length],['متأخرة',delayed.length],['في الجمارك',d.filter(r=>normStatus(r.shipmentStatus)==='Customs Clearance').length],['تصل خلال ١٤ يوماً',soon],['متوسط أيام التسليم',avgD]]
+    :[['In Transit',d.filter(r=>normStatus(r.shipmentStatus)==='In Transit').length],['Arrived',d.filter(r=>normStatus(r.shipmentStatus)==='Arrived').length],['Delayed',delayed.length],['Customs Clearance',d.filter(r=>normStatus(r.shipmentStatus)==='Customs Clearance').length],['Arriving < 14 Days',soon],['Avg Delivery Days',avgD]];
+  document.getElementById('sgrid').innerHTML=`
+    <div class="sc"><h3>${t('finSumT')}</h3>${finRows.map(([l,v])=>`<div class="sr"><span class="srl">${l}</span><span class="srv">${v}</span></div>`).join('')}</div>
+    <div class="sc"><h3>${t('shipSumT')}</h3>${shipRows.map(([l,v])=>`<div class="sr"><span class="srl">${l}</span><span class="srv">${v}</span></div>`).join('')}</div>
+    <div class="sc"><h3>${t('topSupT')}</h3>${topS.slice(0,5).map(([s,v],i)=>`<div class="sr"><span class="srl"><span style="color:var(--blue);font-weight:700;margin-inline-end:8px">#${i+1}</span>${s.length>22?s.slice(0,20)+'…':s}</span><span class="srv">$${Math.round(v/1000)}K</span></div>`).join('')}</div>`;
+  const ins=isAr?[
+    {ic:'ti-trophy',c:'var(--amber)',html:`أكبر مورد: <strong>${topS[0]?topS[0][0]:'—'}</strong> بإجمالي $${topS[0]?Math.round(topS[0][1]/1000):0}K — ${topS[0]?Math.round(topS[0][1]/tv*100):0}% من إجمالي المشتريات`},
+    {ic:'ti-clock-x',c:'var(--red)',html:maxDel?`أكثر شحنة تأخيراً: <strong>${maxDel.invoiceNumber}</strong> من ${maxDel.supplier||'—'} — تأخير ${maxDel.delayDays} أيام`:'لا توجد شحنات متأخرة بشكل ملحوظ'},
+    {ic:'ti-calendar-alert',c:'var(--orange)',html:`<strong>${soon}</strong> حاوية متوقع وصولها خلال ١٤ يوماً — تأكد من جاهزية المستودع وأوراق الجمارك`},
+    {ic:'ti-chart-line',c:'var(--blue)',html:`متوسط وقت التسليم: <strong>${avgD} يوم</strong> عبر ${aD.length} شحنة مكتملة — ${avgD>0&&avgD<35?'أقل من':'أعلى من'} المعيار الصناعي (٣٥ يوماً)`},
+    {ic:'ti-currency-dollar',c:'var(--green)',html:`إجمالي الالتزامات الشرائية: <strong>$${Math.round(tv/1000).toLocaleString()}K مكافئ USD</strong> عبر ${d.length} فاتورة وحاوية نشطة`},
+  ]:[
+    {ic:'ti-trophy',c:'var(--amber)',html:`Largest supplier: <strong>${topS[0]?topS[0][0]:'—'}</strong> with $${topS[0]?Math.round(topS[0][1]/1000):0}K — ${topS[0]?Math.round(topS[0][1]/tv*100):0}% of total spend`},
+    {ic:'ti-clock-x',c:'var(--red)',html:maxDel?`Most delayed: <strong>${maxDel.invoiceNumber}</strong> from ${maxDel.supplier||'—'} — ${maxDel.delayDays} days overdue`:'No significantly delayed shipments'},
+    {ic:'ti-calendar-alert',c:'var(--orange)',html:`<strong>${soon}</strong> container${soon!==1?'s':''} arriving within 14 days — ensure warehouse capacity and customs docs`},
+    {ic:'ti-chart-line',c:'var(--blue)',html:`Average delivery time: <strong>${avgD} days</strong> across ${aD.length} completed shipments — ${avgD>0&&avgD<35?'below':'above'} 35-day benchmark`},
+    {ic:'ti-currency-dollar',c:'var(--green)',html:`Total purchase commitment: <strong>$${Math.round(tv/1000).toLocaleString()}K USD equiv.</strong> across ${d.length} active invoices`},
+  ];
+  document.getElementById('inslist').innerHTML=ins.map(i=>`<div class="ins"><i class="ti ${i.ic}" style="font-size:18px;color:${i.c};flex-shrink:0;margin-top:1px" aria-hidden="true"></i><div style="font-size:13px;color:var(--text2);line-height:1.6">${i.html}</div></div>`).join('');
+}
+
+// ═══════════════════════════════════════
+// REPORTS
+// ═══════════════════════════════════════
+function renderRep(){
+  const titles=t('repTitles'), descs=t('repDescs');
+  const icons=['ti-ship','ti-alert-triangle','ti-users','ti-calendar-month','ti-calendar-stats','ti-currency-dollar'];
+  const cols=['var(--blue)','var(--red)','var(--purple)','var(--green)','var(--orange)','var(--teal)'];
+  document.getElementById('rgrid').innerHTML=titles.map((title,i)=>`
+    <div class="sc" style="cursor:pointer;transition:transform .2s,border-color .2s" onmouseover="this.style.transform='translateY(-2px)';this.style.borderColor='var(--border2)'" onmouseout="this.style.transform='';this.style.borderColor=''">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+        <div style="width:40px;height:40px;border-radius:8px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:20px;color:${cols[i]}"><i class="ti ${icons[i]}" aria-hidden="true"></i></div>
+        <div><div style="font-size:13px;font-weight:600">${title}</div><div style="font-size:11px;color:var(--text2);margin-top:2px">${descs[i]}</div></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn bo" style="flex:1" onclick="exportCSV()"><i class="ti ti-file-spreadsheet"></i>Excel</button>
+        <button class="btn bg2" style="flex:1" onclick="window.print()"><i class="ti ti-printer"></i>PDF</button>
+      </div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════
+function exportCSV(){
+  const hdrs=TR.en.thdr;
+  const rows=S.filtered.map(r=>[r.invoiceNumber,r.supplier,r.invoiceAmount,r.currency,r.blNumber,r.containerNumber,r.expectedArrival,r.remainingDays,r.delayDays,r.shipmentStatus,r.notes,r.entryDate]);
+  const csv='\uFEFF'+hdrs.join(',')+'\n'+rows.map(r=>r.map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download='shipboard_export.csv';a.click();
+}
+
+// ═══════════════════════════════════════
+// REFRESH TIMER
+// ═══════════════════════════════════════
+function startTimer(){
+  const intMin=parseInt(document.getElementById('rint').value)||5;
+  S.countdown=intMin*60;
+  clearInterval(S.timer);
+  S.timer=setInterval(()=>{
+    S.countdown--;
+    document.getElementById('rfill').style.width=(S.countdown/(intMin*60)*100)+'%';
+    const m=Math.floor(S.countdown/60),s=S.countdown%60;
+    document.getElementById('nextUpd').textContent=t('nextUpd')+' '+m+':'+(s<10?'0':'')+s;
+    if(S.countdown<=0) manualRefresh();
+  },1000);
+}
+function manualRefresh(){
+  clearInterval(S.timer);
+  const btn=document.getElementById('rbtn');
+  btn.style.opacity='.5';
+  btn.innerHTML='<i class="ti ti-refresh" style="animation:sp .6s linear infinite"></i>';
+  loadFromSheets().then(()=>{
+    btn.style.opacity='1';
+    btn.innerHTML='<i class="ti ti-refresh" id="rico"></i><span id="rtxt">'+t('refresh')+'</span>';
+    startTimer();
+  });
+}
+
+// ═══════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════
+function saveSettings(){
+  S.csvUrl=document.getElementById('gurl').value.trim();
+  const intMin=parseInt(document.getElementById('rint').value)||5;
+  clearInterval(S.timer);
+  showNotif(S.lang==='ar'?'تم الحفظ — جارٍ إعادة التحميل…':'Saved — reloading data…','am');
+  manualRefresh();
+}
+function setRole(r,btn){
+  S.role=r;
+  document.getElementById('rlbl').textContent=TR[S.lang].roles[r]||r;
+  document.querySelectorAll('#roleBtns .btn').forEach(b=>b.className='btn bo');
+  if(btn)btn.className='btn bp';
+  showNotif((S.lang==='ar'?'الدور: ':'Role: ')+TR[S.lang].roles[r],'gn');
+}
+function prevLogo(e){
+  const f=e.target.files[0];if(!f)return;
+  const rd=new FileReader();rd.onload=ev=>{
+    document.getElementById('logoPrev').innerHTML=`<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:contain;border-radius:8px">`;
+    document.getElementById('bico').innerHTML=`<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">`;
+  };rd.readAsDataURL(f);
+}
+
+// ═══════════════════════════════════════
+// NOTIFICATION TOAST
+// ═══════════════════════════════════════
+function showNotif(msg, type='gn'){
+  const n=document.getElementById('notif');
+  const cols={gn:'var(--green-bg)',rd:'var(--red-bg)',or:'var(--orange-bg)',am:'var(--amber-bg)'};
+  const tc={gn:'var(--green)',rd:'var(--red)',or:'var(--orange)',am:'var(--amber)'};
+  n.style.background=cols[type]||cols.gn;
+  n.style.color=tc[type]||tc.gn;
+  n.style.border='1px solid '+tc[type];
+  n.textContent=msg;
+  n.style.display='block';
+  clearTimeout(n._t);
+  n._t=setTimeout(()=>{n.style.display='none';},3500);
+}
+</script>
+</body>
+</html>
