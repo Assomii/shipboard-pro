@@ -1,4 +1,4 @@
-name: Deploy ShipBoard Pro
+name: Deploy ShipBoard Pro to GitHub Pages
 
 on:
   push:
@@ -21,13 +21,13 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Pages
+      - name: Setup GitHub Pages
         uses: actions/configure-pages@v4
 
-      - name: Upload artifact
+      - name: Upload site files
         uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
