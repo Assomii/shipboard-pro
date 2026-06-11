@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" class="lm">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -8,29 +8,36 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0f1117;--bg2:#161b27;--bg3:#1e2537;--bg4:#252d3d;
-  --border:#2a3348;--border2:#334060;
-  --text:#e8eaf0;--text2:#9ba3b8;--text3:#5a6480;
-  --blue:#3b82f6;--blue2:#1d4ed8;--blue-bg:rgba(59,130,246,.15);
-  --green:#22c55e;--green-bg:rgba(34,197,94,.15);
-  --red:#ef4444;--red2:#b91c1c;--red-bg:rgba(239,68,68,.15);
-  --orange:#f97316;--orange-bg:rgba(249,115,22,.15);
-  --amber:#eab308;--amber-bg:rgba(234,179,8,.15);
-  --purple:#a855f7;--purple-bg:rgba(168,85,247,.15);
-  --teal:#14b8a6;--teal-bg:rgba(20,184,166,.15);
-  --r:10px;--rs:6px;
+  /* ══ Dark Mode ══ */
+  --bg:#111827;--bg2:#1f2937;--bg3:#273548;--bg4:#2e3d52;
+  --border:#374151;--border2:#4b5563;
+  --text:#f1f5f9;--text2:#94a3b8;--text3:#64748b;
+  --blue:#3b82f6;--blue2:#2563eb;--blue-bg:rgba(59,130,246,.15);
+  --green:#10b981;--green-bg:rgba(16,185,129,.15);
+  --red:#ef4444;--red2:#dc2626;--red-bg:rgba(239,68,68,.15);
+  --orange:#f59e0b;--orange-bg:rgba(245,158,11,.15);
+  --amber:#f59e0b;--amber-bg:rgba(245,158,11,.15);
+  --purple:#8b5cf6;--purple-bg:rgba(139,92,246,.15);
+  --teal:#06b6d4;--teal-bg:rgba(6,182,212,.15);
+  --r:8px;--rs:5px;
 }
 .lm{
-  --bg:#f0f2f7;--bg2:#fff;--bg3:#f8fafc;--bg4:#eef1f8;
-  --border:#dde3f0;--border2:#c8d0e4;
-  --text:#1a2035;--text2:#4a5568;--text3:#8a96b0;
-  --blue-bg:rgba(37,99,235,.1);--green-bg:rgba(22,163,74,.1);
-  --red-bg:rgba(220,38,38,.1);--orange-bg:rgba(234,88,12,.1);
-  --amber-bg:rgba(202,138,4,.1);--purple-bg:rgba(147,51,234,.1);--teal-bg:rgba(13,148,136,.1);
+  /* ══ Light Mode — رسمي وأنيق ══ */
+  --bg:#f8fafd;--bg2:#ffffff;--bg3:#f1f5fb;--bg4:#e8eef8;
+  --border:#dde5f0;--border2:#c5d0e8;
+  --text:#0f1f3d;--text2:#3d5278;--text3:#7b93b8;
+  --blue:#1a56db;--blue2:#1340b0;--blue-bg:rgba(26,86,219,.08);
+  --green:#059669;--green-bg:rgba(5,150,105,.08);
+  --red:#dc2626;--red2:#b91c1c;--red-bg:rgba(220,38,38,.08);
+  --orange:#d97706;--orange-bg:rgba(217,119,6,.08);
+  --amber:#b45309;--amber-bg:rgba(180,83,9,.08);
+  --purple:#7c3aed;--purple-bg:rgba(124,58,237,.08);
+  --teal:#0891b2;--teal-bg:rgba(8,145,178,.08);
+  --r:8px;--rs:5px;
 }
-body{background:var(--bg);color:var(--text);font-family:'Segoe UI','Tahoma',system-ui,sans-serif;min-height:100vh;font-size:13px}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI','Tahoma',system-ui,sans-serif;min-height:100vh;font-size:13px;transition:background .3s,color .3s}
 /* TOPNAV */
-.tnav{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:12px}
+.tnav{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
 .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;flex-shrink:0}
 .bico{width:34px;height:34px;background:linear-gradient(135deg,#3b82f6,#a855f7);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800;flex-shrink:0}
 .nav-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -48,7 +55,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI','Tahoma',syst
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 /* LAYOUT */
 .wrap{display:flex;flex:1}
-.side{width:210px;background:var(--bg2);border-inline-end:1px solid var(--border);padding:10px 8px;flex-shrink:0}
+.side{width:215px;background:var(--bg2);border-inline-end:1px solid var(--border);padding:12px 10px;flex-shrink:0;box-shadow:1px 0 4px rgba(0,0,0,.04)}
 .slbl{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;padding:10px 8px 4px}
 .sitem{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--rs);cursor:pointer;color:var(--text2);font-size:13px;transition:all .15s;margin:1px 0;border:none;background:none;width:100%;font-family:inherit}
 [dir=rtl] .sitem{text-align:right}
@@ -64,9 +71,10 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI','Tahoma',syst
 .psub{color:var(--text2);font-size:12px;margin-top:3px}
 .ha{display:flex;gap:8px;flex-wrap:wrap}
 /* KPI */
-.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
-.kcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:15px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s}
-.kcard:hover{transform:translateY(-2px);border-color:var(--border2)}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px;margin-bottom:20px}
+.kcard-cur{border-top:3px solid;background:linear-gradient(135deg,var(--bg2),var(--bg3))}
+.kcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:15px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s,border-color .2s;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.kcard:hover{transform:translateY(-2px);border-color:var(--border2);box-shadow:0 4px 16px rgba(0,0,0,.1)}
 .kcard::before{content:'';position:absolute;top:0;inset-inline-start:0;inset-inline-end:0;height:3px;border-radius:var(--r) var(--r) 0 0}
 .kb::before{background:var(--blue)}.kg::before{background:var(--green)}.kr::before{background:var(--red)}
 .ko::before{background:var(--orange)}.kp::before{background:var(--purple)}.kt::before{background:var(--teal)}
@@ -82,7 +90,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI','Tahoma',syst
 .ktrd.up{color:var(--green)}.ktrd.dn{color:var(--red)}.ktrd.nt{color:var(--text3)}
 /* CHARTS */
 .cgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:20px}
-.ccard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.ccard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
 .ctit{font-size:13px;font-weight:600;margin-bottom:3px}
 .csub{font-size:11px;color:var(--text2);margin-bottom:12px}
 .cwrap{position:relative;width:100%}
@@ -208,7 +216,7 @@ tr:hover td{background:var(--bg3)}
     <button class="nbtn" onclick="toggleLang()" id="lbtn"><i class="ti ti-language"></i><span id="llbl">EN</span></button>
     <button class="nbtn" onclick="toggleTheme()" id="tbtn"><i class="ti ti-moon"></i></button>
     <button class="nbtn" onclick="manualRefresh()" id="rbtn"><i class="ti ti-refresh" id="rico"></i><span id="rtxt">تحديث</span></button>
-    <span class="rbadge" id="rlbl">مدير</span>
+    <span class="rbadge" id="rlbl" style="display:none">مدير</span>
   </div>
 </nav>
 
@@ -223,14 +231,14 @@ tr:hover td{background:var(--bg3)}
 <div class="wrap">
 <aside class="side" id="side">
   <div class="slbl" id="sl1">الرئيسية</div>
-  <button class="sitem act" onclick="nav('dash',this)" id="n-dash"><i class="ti ti-layout-dashboard"></i><span id="nl-dash">لوحة التحكم</span></button>
   <button class="sitem" onclick="nav('track',this)" id="n-track"><i class="ti ti-package"></i><span id="nl-track">الشحنات</span></button>
+  <button class="sitem act" onclick="nav('dash',this)" id="n-dash"><i class="ti ti-layout-dashboard"></i><span id="nl-dash">لوحة التحكم</span></button>
   <button class="sitem" onclick="nav('anal',this)" id="n-anal"><i class="ti ti-chart-bar"></i><span id="nl-anal">التحليلات</span></button>
   <div class="slbl" id="sl2">التقارير</div>
   <button class="sitem" onclick="nav('summ',this)" id="n-summ"><i class="ti ti-clipboard-text"></i><span id="nl-summ">الملخص التنفيذي</span></button>
   <button class="sitem" onclick="nav('rep',this)" id="n-rep"><i class="ti ti-file-export"></i><span id="nl-rep">التقارير</span></button>
-  <div class="slbl" id="sl3">الإعدادات</div>
-  <button class="sitem" onclick="nav('set',this)" id="n-set"><i class="ti ti-settings"></i><span id="nl-set">الإعدادات</span></button>
+  <div class="slbl" id="sl3" style="display:none"></div>
+  <button class="sitem" onclick="nav('set',this)" id="n-set" style="display:none"><i class="ti ti-settings"></i><span id="nl-set">الإعدادات</span></button>
 </aside>
 
 <main class="main">
@@ -423,7 +431,7 @@ tr:hover td{background:var(--bg3)}
 // STATE
 // ═══════════════════════════════════════
 const S = {
-  lang:'ar', theme:'dark', role:'manager',
+  lang:'ar', theme:'light', role:'manager',
   data:[], filtered:[], pg:1, pp:10, sc:'', sd:1,
   countdown:300, timer:null, charts:{},
   csvUrl:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSY5DZRuPmHL3NJsJAYPMOYgwQQnAcGjWT4WpMaXgiUgG8iHJg2u3ZAsOTChXyQ0g/pub?gid=428520260&single=true&output=csv'
@@ -594,29 +602,48 @@ async function loadFromSheets(manual=false) {
   S.csvUrl = url;
   setSrcStatus('loading');
   if (manual) showNotif(t('loading'),'am');
-  try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('HTTP '+res.status);
-    const text = await res.text();
-    const raw = parseCSV(text);
-    if (!raw.length) throw new Error('empty');
-    S.data = raw.map(mapRow).filter(r => r.supplier || r.invoiceNumber);
-    S.filtered = [...S.data];
-    setSrcStatus('ok');
-    populateFilters();
-    renderAll();
-    const now = new Date();
-    document.getElementById('lastUpd').textContent = t('lastUpd')+' '+now.toLocaleTimeString(S.lang==='ar'?'ar-EG':'en-US');
-    const cstat = document.getElementById('cstat');
-    if (cstat) { cstat.style.display='block'; cstat.style.background='var(--green-bg)'; cstat.style.color='var(--green)'; cstat.textContent='✓ '+t('connected')+' — '+S.data.length+' '+(S.lang==='ar'?'سجل':'records'); }
-    if (manual) showNotif((S.lang==='ar'?'تم التحميل بنجاح: ':'Loaded: ')+S.data.length+(S.lang==='ar'?' سجل':' records'),'gn');
-  } catch(e) {
-    setSrcStatus('err');
-    const cstat = document.getElementById('cstat');
-    if (cstat) { cstat.style.display='block'; cstat.style.background='var(--red-bg)'; cstat.style.color='var(--red)'; cstat.textContent='✗ '+(S.lang==='ar'?'خطأ في الاتصال: ':'Connection error: ')+e.message; }
-    if (!S.data.length) { S.data=genDemo(); S.filtered=[...S.data]; populateFilters(); renderAll(); }
-    showNotif((S.lang==='ar'?'تعذّر الاتصال — عرض بيانات تجريبية':'Failed to connect — showing demo data'),'or');
+
+  // نجرب ٣ طرق للوصول للبيانات بالترتيب
+  const proxies = [
+    url, // مباشر أولاً
+    'https://corsproxy.io/?' + encodeURIComponent(url),
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+    'https://cors-anywhere.herokuapp.com/' + url,
+  ];
+
+  let lastErr = null;
+  for (const proxyUrl of proxies) {
+    try {
+      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      if (text.includes('Host not in allowlist') || text.includes('403') || text.length < 10) throw new Error('blocked');
+      const raw = parseCSV(text);
+      if (!raw.length) throw new Error('empty CSV');
+      S.data = raw.map(mapRow).filter(r => r.supplier || r.invoiceNumber);
+      if (!S.data.length) throw new Error('no valid rows');
+      S.filtered = [...S.data];
+      setSrcStatus('ok');
+      populateFilters();
+      renderAll();
+      const now = new Date();
+      document.getElementById('lastUpd').textContent = t('lastUpd')+' '+now.toLocaleTimeString(S.lang==='ar'?'ar-EG':'en-US');
+      const cstat = document.getElementById('cstat');
+      if (cstat) { cstat.style.display='block'; cstat.style.background='var(--green-bg)'; cstat.style.color='var(--green)'; cstat.textContent='✓ '+t('connected')+' — '+S.data.length+' '+(S.lang==='ar'?'سجل':'records'); }
+      if (manual) showNotif((S.lang==='ar'?'تم التحميل بنجاح: ':'Loaded: ')+S.data.length+(S.lang==='ar'?' سجل':' records'),'gn');
+      return; // نجح — نخرج
+    } catch(e) {
+      lastErr = e;
+      continue; // نجرب الـ proxy التالي
+    }
   }
+
+  // كل المحاولات فشلت
+  setSrcStatus('err');
+  const cstat = document.getElementById('cstat');
+  if (cstat) { cstat.style.display='block'; cstat.style.background='var(--red-bg)'; cstat.style.color='var(--red)'; cstat.textContent='✗ '+(S.lang==='ar'?'تعذّر الاتصال — تأكد أن الجدول منشور للعموم':'Connection failed — ensure sheet is published publicly'); }
+  if (!S.data.length) { S.data=genDemo(); S.filtered=[...S.data]; populateFilters(); renderAll(); }
+  showNotif((S.lang==='ar'?'تعذّر الاتصال — عرض بيانات تجريبية':'Failed to connect — showing demo data'),'or');
 }
 
 function setSrcStatus(s) {
@@ -729,7 +756,7 @@ function toggleTheme(){
   S.theme=S.theme==='dark'?'light':'dark';
   document.getElementById('app').className=S.theme==='light'?'lm':'';
   document.getElementById('tbtn').innerHTML=S.theme==='dark'?'<i class="ti ti-moon"></i>':'<i class="ti ti-sun"></i>';
-  destroyCharts(); setTimeout(()=>{ renderDashCharts(); renderAnalCharts(); },100);
+  destroyCharts(); setTimeout(()=>{ renderDashCharts(); renderAnalCharts(); },150);
 }
 
 // ═══════════════════════════════════════
@@ -762,7 +789,6 @@ function normStatus(s){
 function renderKPIs(){
   const d=S.data; const now=new Date();
   const w7=new Date(now.getTime()+7*864e5), m30=new Date(now.getTime()+30*864e5);
-  const tv=d.reduce((s,r)=>s+toUSD(r),0);
   const inT=d.filter(r=>normStatus(r.shipmentStatus)==='In Transit').length;
   const arr=d.filter(r=>normStatus(r.shipmentStatus)==='Arrived').length;
   const del=d.filter(r=>normStatus(r.shipmentStatus)==='Delayed'||r.delayDays>0).length;
@@ -770,19 +796,52 @@ function renderKPIs(){
   const mo=d.filter(r=>{const a=new Date(r.expectedArrival);return a>now&&a<=m30&&normStatus(r.shipmentStatus)!=='Arrived';}).length;
   const aD=d.filter(r=>normStatus(r.shipmentStatus)==='Arrived');
   const avg=aD.length?Math.round(aD.reduce((s,r)=>s+Math.abs((new Date(r.expectedArrival)-new Date(r.entryDate))/864e5),0)/aD.length):0;
+
+  // ── إجمالي بكل عملة ──
+  const curTotals={};
+  d.forEach(r=>{
+    const cur=(r.currency||'USD').trim();
+    curTotals[cur]=(curTotals[cur]||0)+(r.invoiceAmount||0);
+  });
+  const curColors={USD:'kb',EUR:'kp',GBP:'kt',SAR:'kam',AED:'ko',CNY:'kr',GHS:'kg'};
+  const curIcons={USD:'ti-currency-dollar',EUR:'ti-currency-euro',GBP:'ti-currency-pound',SAR:'ti-currency-riyal',AED:'ti-currency-dirham',CNY:'ti-currency-yen',GHS:'ti-coin'};
+  const curSymbols={USD:'$',EUR:'€',GBP:'£',SAR:'﷼',AED:'د.إ',CNY:'¥',GHS:'₵'};
+
+  // مربعات الإحصاء الثابتة
   const lbls=t('kpiLbls');
-  const kpis=[
-    {v:d.length,l:lbls[0],i:'ti-file-invoice',c:'kb',tr:(S.lang==='ar'?'إجمالي السجلات':'Total records'),dir:'nt'},
-    {v:'$'+Math.round(tv/1000).toLocaleString()+'K',l:lbls[1],i:'ti-currency-dollar',c:'kg',tr:'+12%',dir:'up'},
-    {v:inT,l:lbls[2],i:'ti-ship',c:'kb',tr:(S.lang==='ar'?'حاوية نشطة':'active containers'),dir:'nt'},
-    {v:arr,l:lbls[3],i:'ti-circle-check',c:'kg',tr:(S.lang==='ar'?'في الوقت':'on time')+': '+(d.length?Math.round(arr/d.length*100):0)+'%',dir:'up'},
-    {v:del,l:lbls[4],i:'ti-alert-triangle',c:'kr',tr:del>0?(S.lang==='ar'?'يحتاج متابعة':'Needs attention'):(S.lang==='ar'?'لا توجد':'All clear'),dir:del>0?'dn':'up'},
-    {v:wk,l:lbls[5],i:'ti-calendar-week',c:'ko',tr:S.lang==='ar'?'الأيام السبعة القادمة':'Next 7 days',dir:'nt'},
-    {v:mo,l:lbls[6],i:'ti-calendar-month',c:'kp',tr:S.lang==='ar'?'الثلاثون يوماً القادمة':'Next 30 days',dir:'nt'},
-    {v:avg+(S.lang==='ar'?' يوم':' d'),l:lbls[7],i:'ti-clock',c:'kt',tr:(S.lang==='ar'?'المعيار: ٣٥ يوم':'Benchmark: 35d'),dir:avg>0&&avg<35?'up':'dn'},
+  const fixedKpis=[
+    {v:d.length,         l:lbls[0], i:'ti-file-invoice',   c:'kb', tr:(S.lang==='ar'?'إجمالي السجلات':'Total records'), dir:'nt'},
+    {v:inT,              l:lbls[2], i:'ti-ship',            c:'kb', tr:(S.lang==='ar'?'حاوية نشطة':'active containers'), dir:'nt'},
+    {v:arr,              l:lbls[3], i:'ti-circle-check',    c:'kg', tr:(S.lang==='ar'?'في الوقت':'on time')+': '+(d.length?Math.round(arr/d.length*100):0)+'%', dir:'up'},
+    {v:del,              l:lbls[4], i:'ti-alert-triangle',  c:'kr', tr:del>0?(S.lang==='ar'?'يحتاج متابعة':'Needs attention'):(S.lang==='ar'?'لا توجد':'All clear'), dir:del>0?'dn':'up'},
+    {v:wk,               l:lbls[5], i:'ti-calendar-week',   c:'ko', tr:(S.lang==='ar'?'الأيام السبعة القادمة':'Next 7 days'), dir:'nt'},
+    {v:mo,               l:lbls[6], i:'ti-calendar-month',  c:'kp', tr:(S.lang==='ar'?'٣٠ يوماً القادمة':'Next 30 days'), dir:'nt'},
+    {v:avg+(S.lang==='ar'?' يوم':' d'), l:lbls[7], i:'ti-clock', c:'kt', tr:(S.lang==='ar'?'المعيار: ٣٥ يوم':'Benchmark: 35d'), dir:avg>0&&avg<35?'up':'dn'},
   ];
-  document.getElementById('kgrid').innerHTML=kpis.map(k=>`
-    <div class="kcard ${k.c}">
+
+  // مربعات العملات الديناميكية
+  const curKpis = Object.entries(curTotals)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([cur, total]) => {
+      const sym = curSymbols[cur] || cur+' ';
+      const fmt = total>=1000000 ? (sym+Math.round(total/1000000*10)/10+'M') :
+                  total>=1000    ? (sym+Math.round(total/1000)+'K') :
+                  (sym+Math.round(total).toLocaleString());
+      return {
+        v: fmt,
+        l: (S.lang==='ar'?'إجمالي ':'Total ')+cur,
+        i: curIcons[cur]||'ti-currency-dollar',
+        c: curColors[cur]||'kb',
+        tr: Object.keys(curTotals).length+(S.lang==='ar'?' عملة':' currencies'),
+        dir:'nt', isCur:true
+      };
+    });
+
+  // عرض العملات أولاً ثم الإحصاءات
+  const allKpis = [...curKpis, ...fixedKpis];
+
+  document.getElementById('kgrid').innerHTML = allKpis.map(k=>`
+    <div class="kcard ${k.c}${k.isCur?' kcard-cur':''}">
       <div class="kico ${k.c}"><i class="ti ${k.i}" aria-hidden="true"></i></div>
       <div class="kval">${k.v}</div>
       <div class="klbl">${k.l}</div>
