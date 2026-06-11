@@ -459,7 +459,17 @@ const TR = {
     langLbl:'EN', roleLabel:'مدير',
     roles:{accountant:'محاسب',manager:'مدير',executive:'تنفيذي'},
     kpiLbls:['إجمالي الفواتير','إجمالي القيمة (USD)','في الطريق','وصلت','متأخرة','تصل هذا الأسبوع','تصل هذا الشهر','متوسط التسليم'],
-    statuses:{Arrived:'وصلت','In Transit':'في الطريق',Delayed:'متأخرة','Customs Clearance':'الجمارك',Pending:'معلقة','في الطريق':'في الطريق','وصلت':'وصلت','متأخرة':'متأخرة','الجمارك':'الجمارك','معلقة':'معلقة'},
+    statuses:{
+      'Arrived':'وصلت / تم الاستلام',
+      'In Transit':'في البحر / جارٍ الشحن',
+      'Delayed':'متأخرة',
+      'Customs Clearance':'التخليص الجمركي',
+      'Pending':'بانتظار الشحن',
+      // قيم الجدول المباشرة
+      'في البحر':'في البحر','تم الشحن':'تم الشحن','بانتظار الشحن':'بانتظار الشحن',
+      'وصلت':'وصلت','تم الاستلام':'تم الاستلام','متأخرة':'متأخرة',
+      'في الطريق':'في الطريق','معلقة':'معلقة','الجمارك':'الجمارك',
+    },
     thdr:['رقم الفاتورة','المورد','المبلغ','العملة','رقم BL','الحاوية','تاريخ الوصول','الأيام المتبقية','أيام التأخير','الحالة','ملاحظات'],
     allStat:'جميع الحالات', allSup:'جميع الموردين', allCur:'جميع العملات',
     ct1:'توزيع حالة الشحنات', cs1:'نسب الحالات الحالية',
@@ -622,6 +632,10 @@ async function loadFromSheets(manual=false) {
       if (!raw.length) throw new Error('empty CSV');
       S.data = raw.map(mapRow).filter(r => r.supplier || r.invoiceNumber);
       if (!S.data.length) throw new Error('no valid rows');
+      // Debug: اطبع الحالات الفريدة في الكونسول
+      const uniqueStatuses = [...new Set(S.data.map(r=>r.shipmentStatus).filter(Boolean))];
+      console.log('📦 حالات الشحنة الموجودة في جدولك:', uniqueStatuses);
+      console.log('📊 عينة من البيانات:', S.data.slice(0,3));
       S.filtered = [...S.data];
       setSrcStatus('ok');
       populateFilters();
@@ -775,16 +789,78 @@ function nav(id,el){
 function normStatus(s){
   if (!s) return 'Pending';
   const clean = s.trim();
-  const map = {
-    'في الطريق':'In Transit','قيد الشحن':'In Transit','جارٍ الشحن':'In Transit','تحت الشحن':'In Transit',
-    'وصلت':'Arrived','تم الوصول':'Arrived','استلمت':'Arrived','مستلمة':'Arrived',
-    'متأخرة':'Delayed','متأخر':'Delayed','تأخير':'Delayed',
-    'الجمارك':'Customs Clearance','في الجمارك':'Customs Clearance','التخليص الجمركي':'Customs Clearance','تخليص جمركي':'Customs Clearance',
-    'معلقة':'Pending','معلق':'Pending','قيد الانتظار':'Pending','انتظار':'Pending',
-    'in transit':'In Transit','arrived':'Arrived','delayed':'Delayed',
-    'customs clearance':'Customs Clearance','customs':'Customs Clearance','pending':'Pending',
+  const lower = clean.toLowerCase();
+
+  // ══ القيم الحقيقية من جدول Google Sheets ══
+  const exactMap = {
+    // ── في البحر / شحن نشط ──
+    'في البحر'          : 'In Transit',
+    'في الطريق'         : 'In Transit',
+    'تم الشحن'          : 'In Transit',
+    'قيد الشحن'         : 'In Transit',
+    'جارٍ الشحن'        : 'In Transit',
+    'تحت الشحن'         : 'In Transit',
+    'مشحون'             : 'In Transit',
+    'شحن'               : 'In Transit',
+    // ── انتظار ──
+    'بانتظار الشحن'     : 'Pending',
+    'في انتظار الشحن'   : 'Pending',
+    'انتظار الشحن'      : 'Pending',
+    'معلقة'             : 'Pending',
+    'معلق'              : 'Pending',
+    'معلقه'             : 'Pending',
+    'قيد الانتظار'      : 'Pending',
+    'انتظار'            : 'Pending',
+    // ── وصول / استلام ──
+    'وصلت'              : 'Arrived',
+    'تم الاستلام'       : 'Arrived',
+    'تم الوصول'         : 'Arrived',
+    'استلمت'            : 'Arrived',
+    'مستلمة'            : 'Arrived',
+    'موصلة'             : 'Arrived',
+    'وصل'               : 'Arrived',
+    'تسليم'             : 'Arrived',
+    // ── تأخير ──
+    'متأخرة'            : 'Delayed',
+    'متأخر'             : 'Delayed',
+    'متأخره'            : 'Delayed',
+    'تأخير'             : 'Delayed',
+    // ── جمارك ──
+    'الجمارك'           : 'Customs Clearance',
+    'في الجمارك'        : 'Customs Clearance',
+    'تخليص جمركي'       : 'Customs Clearance',
+    'التخليص الجمركي'   : 'Customs Clearance',
+    'جمارك'             : 'Customs Clearance',
+    'تخليص'             : 'Customs Clearance',
+    // ── إنجليزي ──
+    'in transit'        : 'In Transit',
+    'on the way'        : 'In Transit',
+    'shipped'           : 'In Transit',
+    'in sea'            : 'In Transit',
+    'at sea'            : 'In Transit',
+    'arrived'           : 'Arrived',
+    'delivered'         : 'Arrived',
+    'received'          : 'Arrived',
+    'delayed'           : 'Delayed',
+    'late'              : 'Delayed',
+    'customs clearance' : 'Customs Clearance',
+    'customs'           : 'Customs Clearance',
+    'pending'           : 'Pending',
+    'waiting'           : 'Pending',
+    'on hold'           : 'Pending',
   };
-  return map[clean] || map[clean.toLowerCase()] || clean;
+
+  if (exactMap[clean]) return exactMap[clean];
+  if (exactMap[lower]) return exactMap[lower];
+
+  // مطابقة جزئية كاحتياط
+  if (lower.includes('بحر') || lower.includes('طريق') || lower.includes('شحن') || lower.includes('transit') || lower.includes('sea')) return 'In Transit';
+  if (lower.includes('وصل') || lower.includes('استلم') || lower.includes('arriv') || lower.includes('deliver')) return 'Arrived';
+  if (lower.includes('تأخ') || lower.includes('delay') || lower.includes('late')) return 'Delayed';
+  if (lower.includes('جمرك') || lower.includes('تخليص') || lower.includes('custom')) return 'Customs Clearance';
+  if (lower.includes('انتظار') || lower.includes('معلق') || lower.includes('pending') || lower.includes('wait') || lower.includes('hold')) return 'Pending';
+
+  return clean;
 }
 function renderKPIs(){
   const d=S.data; const now=new Date();
