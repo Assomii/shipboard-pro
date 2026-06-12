@@ -282,8 +282,8 @@ tr:hover td{background:var(--bg3)}
 <aside class="side" id="side">
   <button class="nbtn side-close" onclick="closeSidebar()" id="sideCloseBtn"><i class="ti ti-x"></i></button>
   <div class="slbl" id="sl1">الرئيسية</div>
-  <button class="sitem" onclick="nav('track',this)" id="n-track"><i class="ti ti-package"></i><span id="nl-track">الشحنات</span></button>
-  <button class="sitem act" onclick="nav('dash',this)" id="n-dash"><i class="ti ti-layout-dashboard"></i><span id="nl-dash">لوحة التحكم</span></button>
+  <button class="sitem act" onclick="nav('track',this)" id="n-track"><i class="ti ti-package"></i><span id="nl-track">الشحنات</span></button>
+  <button class="sitem" onclick="nav('dash',this)" id="n-dash"><i class="ti ti-layout-dashboard"></i><span id="nl-dash">لوحة التحكم</span></button>
   <button class="sitem" onclick="nav('anal',this)" id="n-anal"><i class="ti ti-chart-bar"></i><span id="nl-anal">التحليلات</span></button>
   <div class="slbl" id="sl2">التقارير</div>
   <button class="sitem" onclick="nav('summ',this)" id="n-summ"><i class="ti ti-clipboard-text"></i><span id="nl-summ">الملخص التنفيذي</span></button>
@@ -294,8 +294,8 @@ tr:hover td{background:var(--bg3)}
 
 <!-- BOTTOM NAV (mobile only) -->
 <nav class="bottom-nav" id="bottomNav">
-  <button class="bnav-item act" onclick="navMobile('dash',this)"><i class="ti ti-layout-dashboard"></i><span id="bn-dash">الرئيسية</span></button>
-  <button class="bnav-item" onclick="navMobile('track',this)"><i class="ti ti-package"></i><span id="bn-track">الشحنات</span></button>
+  <button class="bnav-item act" onclick="navMobile('track',this)"><i class="ti ti-package"></i><span id="bn-track">الشحنات</span></button>
+  <button class="bnav-item" onclick="navMobile('dash',this)"><i class="ti ti-layout-dashboard"></i><span id="bn-dash">الرئيسية</span></button>
   <button class="bnav-item" onclick="navMobile('anal',this)"><i class="ti ti-chart-bar"></i><span id="bn-anal">التحليلات</span></button>
   <button class="bnav-item" onclick="navMobile('summ',this)"><i class="ti ti-clipboard-text"></i><span id="bn-summ">الملخص</span></button>
   <button class="bnav-item" onclick="navMobile('rep',this)"><i class="ti ti-file-export"></i><span id="bn-rep">التقارير</span></button>
@@ -304,7 +304,7 @@ tr:hover td{background:var(--bg3)}
 <main class="main">
 
 <!-- ══ DASHBOARD ══ -->
-<div class="pg act" id="pg-dash">
+<div class="pg" id="pg-dash">
   <div class="phdr">
     <div>
       <div class="ptitle"><i class="ti ti-layout-dashboard" style="color:var(--blue)"></i><span id="t-dash">لوحة التحكم</span></div>
@@ -347,7 +347,7 @@ tr:hover td{background:var(--bg3)}
 </div>
 
 <!-- ══ TRACKING ══ -->
-<div class="pg" id="pg-track">
+<div class="pg act" id="pg-track">
   <div class="phdr">
     <div>
       <div class="ptitle"><i class="ti ti-package" style="color:var(--blue)"></i><span id="t-track">تتبع الشحنات</span></div>
