@@ -2,8 +2,25 @@
 <html lang="ar" dir="rtl" class="lm">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>ShipBoard Pro — لوحة متابعة الشحنات</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a56db">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ShipBoard Pro">
+<meta name="application-name" content="ShipBoard Pro">
+<meta name="msapplication-TileColor" content="#1a56db">
+<meta name="description" content="لوحة متابعة الشحنات والفواتير - ShipBoard Pro">
+
+<!-- Icons -->
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.12.0/dist/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -174,14 +191,43 @@ tr:hover td{background:var(--bg3)}
 /* NOTIFICATION */
 .notif{position:fixed;bottom:20px;inset-inline-end:20px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;font-size:12px;max-width:320px;z-index:999;display:none;animation:fadeIn .3s ease}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+/* HAMBURGER & SIDEBAR OVERLAY */
+.hamburger{display:none}
+.side-close{display:none}
+.side-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199}
+.side-overlay.show{display:block}
+
+/* BOTTOM NAV (mobile) */
+.bottom-nav{display:none}
+.bnav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex:1;background:none;border:none;color:var(--text3);font-size:10px;padding:6px 2px;cursor:pointer;font-family:inherit;transition:color .15s}
+.bnav-item i{font-size:19px}
+.bnav-item.act{color:var(--blue)}
+
 /* RESPONSIVE */
 @media(max-width:768px){
-  .side{display:none}.main{padding:12px}
+  .hamburger{display:flex}
+  .sbar{display:none}
+  .side{
+    display:flex;flex-direction:column;
+    position:fixed;top:0;inset-inline-start:0;height:100vh;width:78%;max-width:280px;
+    z-index:200;transform:translateX(-105%);transition:transform .25s ease;
+    box-shadow:4px 0 24px rgba(0,0,0,.15);
+  }
+  [dir=rtl] .side{transform:translateX(105%)}
+  .side.open{transform:translateX(0)}
+  .side-close{display:flex;align-self:flex-end;margin-bottom:8px}
+  .main{padding:12px;padding-bottom:74px}
   .kgrid{grid-template-columns:repeat(2,1fr)}
   .cgrid{grid-template-columns:1fr}
+  .bottom-nav{
+    display:flex;position:fixed;bottom:0;inset-inline-start:0;inset-inline-end:0;
+    background:var(--bg2);border-top:1px solid var(--border);
+    z-index:150;padding:6px 4px;padding-bottom:max(6px,env(safe-area-inset-bottom));
+    box-shadow:0 -2px 10px rgba(0,0,0,.06);
+  }
 }
 @media print{
-  .tnav,.sbar,.side,.ttbar,.pag,.ha,.lov{display:none!important}
+  .tnav,.sbar,.side,.ttbar,.pag,.ha,.lov,.bottom-nav{display:none!important}
   .main{padding:0}.tcard,.ccard{break-inside:avoid}
 }
 </style>
@@ -205,6 +251,7 @@ tr:hover td{background:var(--bg3)}
 <!-- TOPNAV -->
 <nav class="tnav">
   <div class="brand">
+    <button class="nbtn hamburger" onclick="toggleSidebar()" id="hamBtn" aria-label="Menu"><i class="ti ti-menu-2"></i></button>
     <div class="bico" id="bico">SB</div>
     <span id="bname">ShipBoard Pro</span>
   </div>
@@ -220,16 +267,20 @@ tr:hover td{background:var(--bg3)}
   </div>
 </nav>
 
-<!-- STATUS BAR -->
-<div class="sbar">
+<!-- STATUS BAR (مخفي على الموبايل) -->
+<div class="sbar" id="sbar">
   <span id="lastUpd">آخر تحديث: الآن</span>
   <div class="rtrack"><div class="rfill" id="rfill"></div></div>
   <span id="nextUpd">التحديث التالي: ٥:٠٠</span>
 </div>
 
+<!-- OVERLAY for mobile sidebar -->
+<div class="side-overlay" id="sideOverlay" onclick="closeSidebar()"></div>
+
 <!-- LAYOUT -->
 <div class="wrap">
 <aside class="side" id="side">
+  <button class="nbtn side-close" onclick="closeSidebar()" id="sideCloseBtn"><i class="ti ti-x"></i></button>
   <div class="slbl" id="sl1">الرئيسية</div>
   <button class="sitem" onclick="nav('track',this)" id="n-track"><i class="ti ti-package"></i><span id="nl-track">الشحنات</span></button>
   <button class="sitem act" onclick="nav('dash',this)" id="n-dash"><i class="ti ti-layout-dashboard"></i><span id="nl-dash">لوحة التحكم</span></button>
@@ -240,6 +291,15 @@ tr:hover td{background:var(--bg3)}
   <div class="slbl" id="sl3" style="display:none"></div>
   <button class="sitem" onclick="nav('set',this)" id="n-set" style="display:none"><i class="ti ti-settings"></i><span id="nl-set">الإعدادات</span></button>
 </aside>
+
+<!-- BOTTOM NAV (mobile only) -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bnav-item act" onclick="navMobile('dash',this)"><i class="ti ti-layout-dashboard"></i><span id="bn-dash">الرئيسية</span></button>
+  <button class="bnav-item" onclick="navMobile('track',this)"><i class="ti ti-package"></i><span id="bn-track">الشحنات</span></button>
+  <button class="bnav-item" onclick="navMobile('anal',this)"><i class="ti ti-chart-bar"></i><span id="bn-anal">التحليلات</span></button>
+  <button class="bnav-item" onclick="navMobile('summ',this)"><i class="ti ti-clipboard-text"></i><span id="bn-summ">الملخص</span></button>
+  <button class="bnav-item" onclick="navMobile('rep',this)"><i class="ti ti-file-export"></i><span id="bn-rep">التقارير</span></button>
+</nav>
 
 <main class="main">
 
@@ -733,6 +793,10 @@ function applyLang(){
   q('nl-dash').textContent=t('navDash'); q('nl-track').textContent=t('navTrack');
   q('nl-anal').textContent=t('navAnal'); q('nl-summ').textContent=t('navSumm');
   q('nl-rep').textContent=t('navRep'); q('nl-set').textContent=t('navSet');
+  // Bottom nav (mobile)
+  q('bn-dash').textContent=t('navDash'); q('bn-track').textContent=t('navTrack');
+  q('bn-anal').textContent=t('navAnal'); q('bn-summ').textContent=isAr?'الملخص':'Summary';
+  q('bn-rep').textContent=t('navRep');
   q('t-dash').textContent=t('dashT'); q('s-dash').textContent=t('dashS');
   q('t-track').textContent=t('trackT'); q('s-track').textContent=t('trackS');
   q('t-anal').textContent=t('analT'); q('s-anal').textContent=t('analS');
@@ -779,8 +843,46 @@ function toggleTheme(){
 function nav(id,el){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('act'));
   document.querySelectorAll('.sitem').forEach(s=>s.classList.remove('act'));
+  document.querySelectorAll('.bnav-item').forEach(s=>s.classList.remove('act'));
   document.getElementById('pg-'+id).classList.add('act');
   if(el) el.classList.add('act');
+  // sync bottom nav active state
+  const bnMap={dash:'bn-dash',track:'bn-track',anal:'bn-anal',summ:'bn-summ',rep:'bn-rep'};
+  if(bnMap[id]){
+    const bn=document.getElementById(bnMap[id]);
+    if(bn) bn.closest('.bnav-item').classList.add('act');
+  }
+  closeSidebar();
+}
+
+// نفس التنقل لكن من شريط الموبايل السفلي
+function navMobile(id, el){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('act'));
+  document.querySelectorAll('.sitem').forEach(s=>s.classList.remove('act'));
+  document.querySelectorAll('.bnav-item').forEach(s=>s.classList.remove('act'));
+  document.getElementById('pg-'+id).classList.add('act');
+  if(el) el.classList.add('act');
+  // sync sidebar active state
+  const sideMap={dash:'n-dash',track:'n-track',anal:'n-anal',summ:'n-summ',rep:'n-rep'};
+  if(sideMap[id]){
+    const s=document.getElementById(sideMap[id]);
+    if(s) s.classList.add('act');
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ═══════════════════════════════════════
+// MOBILE SIDEBAR TOGGLE
+// ═══════════════════════════════════════
+function toggleSidebar(){
+  const side=document.getElementById('side');
+  const overlay=document.getElementById('sideOverlay');
+  side.classList.toggle('open');
+  overlay.classList.toggle('show');
+}
+function closeSidebar(){
+  document.getElementById('side').classList.remove('open');
+  document.getElementById('sideOverlay').classList.remove('show');
 }
 
 // ═══════════════════════════════════════
@@ -1215,6 +1317,92 @@ function showNotif(msg, type='gn'){
   n.style.display='block';
   clearTimeout(n._t);
   n._t=setTimeout(()=>{n.style.display='none';},3500);
+}
+</script>
+
+<!-- PWA Install Banner -->
+<div id="installBanner" style="display:none;position:fixed;bottom:20px;inset-inline-start:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:14px 20px;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:9999;display:none;align-items:center;gap:14px;max-width:340px;width:90%">
+  <div style="width:42px;height:42px;background:linear-gradient(135deg,#1a56db,#7c3aed);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;flex-shrink:0">🚢</div>
+  <div style="flex:1">
+    <div style="font-size:13px;font-weight:700;color:var(--text)">تثبيت ShipBoard Pro</div>
+    <div style="font-size:11px;color:var(--text2);margin-top:2px">ثبّت التطبيق للوصول السريع</div>
+  </div>
+  <div style="display:flex;gap:8px;flex-shrink:0">
+    <button onclick="installPWA()" style="background:var(--blue);color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:600">تثبيت</button>
+    <button onclick="dismissInstall()" style="background:var(--bg4);color:var(--text2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:12px;cursor:pointer;font-family:inherit">✕</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// PWA — Service Worker Registration
+// ══════════════════════════════════════
+let deferredPrompt = null;
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('✅ SW registered:', reg.scope))
+      .catch(err => console.log('SW error:', err));
+  });
+}
+
+// اعتراض حدث التثبيت
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // أظهر البانر بعد 3 ثواني
+  setTimeout(() => {
+    const banner = document.getElementById('installBanner');
+    if (banner && !localStorage.getItem('pwa-dismissed')) {
+      banner.style.display = 'flex';
+    }
+  }, 3000);
+});
+
+function installPWA() {
+  const banner = document.getElementById('installBanner');
+  if (banner) banner.style.display = 'none';
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(choice => {
+      if (choice.outcome === 'accepted') {
+        console.log('✅ PWA installed');
+        showNotif('تم تثبيت التطبيق بنجاح! 🎉', 'gn');
+      }
+      deferredPrompt = null;
+    });
+  }
+}
+
+function dismissInstall() {
+  const banner = document.getElementById('installBanner');
+  if (banner) banner.style.display = 'none';
+  localStorage.setItem('pwa-dismissed', '1');
+}
+
+// iOS install instructions
+window.addEventListener('load', () => {
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  if (isIOS && !isStandalone && !localStorage.getItem('ios-dismissed')) {
+    setTimeout(() => {
+      const banner = document.getElementById('installBanner');
+      if (banner) {
+        banner.querySelector('.install-title').textContent = 'تثبيت على iPhone/iPad';
+        banner.querySelector('.install-sub').textContent = 'اضغط Share ثم "Add to Home Screen"';
+        banner.style.display = 'flex';
+      }
+    }, 3000);
+  }
+});
+
+// تحديث عند وجود نسخة جديدة
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    showNotif('يوجد تحديث جديد — سيتم التحديث تلقائياً', 'am');
+    setTimeout(() => location.reload(), 2000);
+  });
 }
 </script>
 </body>
