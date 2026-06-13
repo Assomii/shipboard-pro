@@ -85,12 +85,12 @@ def is_arrived(status):
 # ══════════════════════════════════════════
 # حساب الأيام المتبقية من تاريخ الوصول المتوقع
 # ══════════════════════════════════════════
-def days_remaining(eta_str):
-    """يحسب الأيام المتبقية بين اليوم وتاريخ الوصول المتوقع."""
+def days_remaining_from_date(eta_str):
+    """يحسب الأيام المتبقية من تاريخ الوصول المتوقع."""
     if not eta_str:
         return None
     eta_str = eta_str.strip()
-    fmt_list = ["%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y", "%d-%m-%Y", "%Y/%m/%d"]
+    fmt_list = ["%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y", "%d-%m-%Y", "%Y/%m/%d", "%d.%m.%Y"]
     for fmt in fmt_list:
         try:
             eta_date = datetime.strptime(eta_str, fmt).date()
@@ -98,6 +98,27 @@ def days_remaining(eta_str):
         except ValueError:
             continue
     return None
+
+
+def get_remaining_days(row):
+    """
+    يحدد الأيام المتبقية بأولوية:
+    1. عمود "الأيام المتبقية" إن وُجد رقم صحيح فيه
+    2. حساب من "تاريخ الوصول المتوقع"
+    """
+    raw = get_field(row, "الأيام المتبقية")
+    if raw:
+        try:
+            # تنظيف من أي رموز غير رقمية (مثل "٧" عربي أو فراغات)
+            cleaned = raw.translate(str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789"))
+            cleaned = "".join(ch for ch in cleaned if ch.isdigit() or ch == "-")
+            if cleaned:
+                return int(cleaned)
+        except (ValueError, TypeError):
+            pass
+
+    eta = get_field(row, "تاريخ الوصول المتوقع")
+    return days_remaining_from_date(eta)
 
 
 # ══════════════════════════════════════════
@@ -178,20 +199,28 @@ def main():
     print(f"✓ تم تحميل {len(rows)} سجل")
 
     alerts_sent = 0
+    debug = os.environ.get("DEBUG", "").lower() in ("1", "true", "yes")
 
     for row in rows:
         status = get_field(row, "حالة الشحنة")
+        container = get_field(row, "رقم الحاوية") or get_field(row, "رقم الفاتورة")
+
         if is_arrived(status):
+            if debug:
+                print(f"  ⏭️  {container}: تم تجاهلها (الحالة: {status})")
             continue  # تجاهل الحاويات الواصلة
 
-        eta = get_field(row, "تاريخ الوصول المتوقع")
-        remaining = days_remaining(eta)
+        remaining = get_remaining_days(row)
+
+        if debug:
+            raw_remaining_col = get_field(row, "الأيام المتبقية")
+            raw_eta = get_field(row, "تاريخ الوصول المتوقع")
+            print(f"  📦 {container}: الحالة='{status}' | عمود الأيام المتبقية='{raw_remaining_col}' | تاريخ الوصول='{raw_eta}' | المحسوب={remaining}")
 
         if remaining is None:
             continue
 
         if remaining in ALERT_DAYS:
-            container = get_field(row, "رقم الحاوية") or get_field(row, "رقم الفاتورة")
             print(f"\n🔔 تنبيه: حاوية {container} متبقي عليها {remaining} يوم")
 
             message = build_message(row, remaining)
