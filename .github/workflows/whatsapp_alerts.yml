@@ -5,7 +5,15 @@ on:
     # يعمل كل ساعة
     - cron: '0 * * * *'
   workflow_dispatch:
-    # يسمح بالتشغيل اليدوي من تبويب Actions
+    inputs:
+      debug:
+        description: 'تفعيل وضع التصحيح (يطبع كل صف)'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
 
 permissions:
   contents: read
@@ -25,4 +33,5 @@ jobs:
       - name: Run arrival check & send WhatsApp alerts
         env:
           WHATSAPP_RECIPIENTS: ${{ secrets.WHATSAPP_RECIPIENTS }}
+          DEBUG: ${{ inputs.debug || 'false' }}
         run: python scripts/check_arrivals.py
