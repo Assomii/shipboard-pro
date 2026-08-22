@@ -448,7 +448,7 @@ tr:hover td{background:var(--bg3)}
     <div class="sc" style="margin-bottom:16px">
       <h3 id="sh1">ربط Google Sheets</h3>
       <label class="slb" id="sl-url">رابط الجدول (CSV منشور)</label>
-      <input type="text" class="sinp" id="gurl" value="https://script.google.com/macros/s/AKfycbyLvVRTCIcwW1_uhnm7Aio_Z9mE8mnqTBDBfaYdQ7hAtgAZivkgGJ8h7V2qBl2etRlpqA/exec">
+      <input type="text" class="sinp" id="gurl" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vSY5DZRuPmHL3NJsJAYPMOYgwQQnAcGjWT4WpMaXgiUgG8iHJg2u3ZAsOTChXyQ0g/pub?gid=428520260&single=true&output=csv">
       <label class="slb" id="sl-int">فترة التحديث التلقائي (دقائق)</label>
       <input type="number" class="sinp" id="rint" value="5" min="1" max="60" style="max-width:120px">
       <div style="display:flex;gap:10px;margin-top:4px;flex-wrap:wrap">
@@ -494,7 +494,7 @@ const S = {
   lang:'ar', theme:'light', role:'manager',
   data:[], filtered:[], pg:1, pp:10, sc:'', sd:1,
   countdown:300, timer:null, charts:{},
-  csvUrl:'https://script.google.com/macros/s/AKfycbyLvVRTCIcwW1_uhnm7Aio_Z9mE8mnqTBDBfaYdQ7hAtgAZivkgGJ8h7V2qBl2etRlpqA/exec'
+  csvUrl:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSY5DZRuPmHL3NJsJAYPMOYgwQQnAcGjWT4WpMaXgiUgG8iHJg2u3ZAsOTChXyQ0g/pub?gid=428520260&single=true&output=csv'
 };
 
 // ═══════════════════════════════════════
@@ -668,56 +668,96 @@ function mapRow(r, idx) {
 // LOAD FROM GOOGLE SHEETS
 // ═══════════════════════════════════════
 async function loadFromSheets(manual=false) {
-  const url = document.getElementById('gurl').value.trim() || S.csvUrl;
-  S.csvUrl = url;
+  // معرّف الجدول وورقة العمل
+  const SHEET_ID  = '1EYhscIryc2Q8_Hc4MwYuKFWJDfJ-7QAI';
+  const GID       = '428520260';
+  const CSV_URL   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSY5DZRuPmHL3NJsJAYPMOYgwQQnAcGjWT4WpMaXgiUgG8iHJg2u3ZAsOTChXyQ0g/pub?gid=428520260&single=true&output=csv';
+
   setSrcStatus('loading');
-  if (manual) showNotif(t('loading'),'am');
+  if (manual) showNotif(t('loading'), 'am');
 
-  // نجرب ٣ طرق للوصول للبيانات بالترتيب
- const proxies = [
-    'https://corsproxy.io/?' + encodeURIComponent(url),
-    'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
-    'https://thingproxy.freeboard.io/fetch/' + url,
-    url,
-  ];
+  // الطريقة 1: Google Visualization API (لا تحتاج CORS)
+  function loadViaGViz() {
+    return new Promise((resolve, reject) => {
+      const callbackName = '_gviz_cb_' + Date.now();
+      const timeout = setTimeout(() => {
+        delete window[callbackName];
+        reject(new Error('timeout'));
+      }, 12000);
 
-  let lastErr = null;
-  for (const proxyUrl of proxies) {
-    try {
-      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const text = await res.text();
-      if (text.includes('Host not in allowlist') || text.includes('403') || text.length < 10) throw new Error('blocked');
-      const raw = parseCSV(text);
-      if (!raw.length) throw new Error('empty CSV');
-      S.data = raw.map(mapRow).filter(r => r.supplier || r.invoiceNumber);
-      if (!S.data.length) throw new Error('no valid rows');
-      // Debug: اطبع الحالات الفريدة في الكونسول
-      const uniqueStatuses = [...new Set(S.data.map(r=>r.shipmentStatus).filter(Boolean))];
-      console.log('📦 حالات الشحنة الموجودة في جدولك:', uniqueStatuses);
-      console.log('📊 عينة من البيانات:', S.data.slice(0,3));
-      S.filtered = [...S.data];
-      setSrcStatus('ok');
-      populateFilters();
-      renderAll();
-      const now = new Date();
-      document.getElementById('lastUpd').textContent = t('lastUpd')+' '+now.toLocaleTimeString(S.lang==='ar'?'ar-EG':'en-US');
-      const cstat = document.getElementById('cstat');
-      if (cstat) { cstat.style.display='block'; cstat.style.background='var(--green-bg)'; cstat.style.color='var(--green)'; cstat.textContent='✓ '+t('connected')+' — '+S.data.length+' '+(S.lang==='ar'?'سجل':'records'); }
-      if (manual) showNotif((S.lang==='ar'?'تم التحميل بنجاح: ':'Loaded: ')+S.data.length+(S.lang==='ar'?' سجل':' records'),'gn');
-      return; // نجح — نخرج
-    } catch(e) {
-      lastErr = e;
-      continue; // نجرب الـ proxy التالي
-    }
+      window[callbackName] = function(resp) {
+        clearTimeout(timeout);
+        delete window[callbackName];
+        try {
+          const table = resp.table;
+          if (!table || !table.cols) { reject(new Error('no table')); return; }
+          const headers = table.cols.map(c => c.label || c.id);
+          const rows = (table.rows || []).map(r =>
+            Object.fromEntries(headers.map((h, i) => [h, r.c && r.c[i] ? (r.c[i].v !== null && r.c[i].v !== undefined ? String(r.c[i].v) : '') : '']))
+          );
+          resolve(rows);
+        } catch(e) { reject(e); }
+      };
+
+      const script = document.createElement('script');
+      script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&tq=select+*&gid=${GID}&callback=${callbackName}`;
+      script.onerror = () => { clearTimeout(timeout); reject(new Error('script error')); };
+      document.head.appendChild(script);
+      setTimeout(() => document.head.removeChild(script), 15000);
+    });
+  }
+
+  // الطريقة 2: CSV مباشر (قد يعمل في بعض المتصفحات)
+  async function loadViaCSV() {
+    const res = await fetch(CSV_URL, { mode: 'no-cors', signal: AbortSignal.timeout(8000) });
+    // no-cors لا يرجع بيانات قابلة للقراءة، نجرب cors عادي
+    const res2 = await fetch(CSV_URL, { signal: AbortSignal.timeout(8000) });
+    if (!res2.ok) throw new Error('HTTP ' + res2.status);
+    return parseCSV(await res2.text());
+  }
+
+  // جرب GViz أولاً
+  try {
+    const rows = await loadViaGViz();
+    if (!rows.length) throw new Error('empty');
+    S.data = rows.map(mapRow).filter(r => r.supplier || r.invoiceNumber);
+    if (!S.data.length) throw new Error('no valid rows after mapping');
+    console.log('✅ GViz:', S.data.length, 'سجل', [...new Set(S.data.map(r=>r.shipmentStatus).filter(Boolean))]);
+    S.filtered = [...S.data];
+    setSrcStatus('ok');
+    populateFilters(); renderAll();
+    document.getElementById('lastUpd').textContent = t('lastUpd') + ' ' + new Date().toLocaleTimeString(S.lang==='ar'?'ar-EG':'en-US');
+    const cstat = document.getElementById('cstat');
+    if (cstat) { cstat.style.display='block'; cstat.style.background='var(--green-bg)'; cstat.style.color='var(--green)'; cstat.textContent='✓ ' + t('connected') + ' — ' + S.data.length + ' ' + (S.lang==='ar'?'سجل':'records'); }
+    if (manual) showNotif((S.lang==='ar'?'تم التحميل: ':'Loaded: ') + S.data.length + (S.lang==='ar'?' سجل':' records'), 'gn');
+    return;
+  } catch(e) {
+    console.warn('GViz فشل:', e.message);
+  }
+
+  // جرب CSV مباشر
+  try {
+    const rows = await loadViaCSV();
+    if (!rows.length) throw new Error('empty');
+    S.data = rows.map(mapRow).filter(r => r.supplier || r.invoiceNumber);
+    if (!S.data.length) throw new Error('no valid rows');
+    console.log('✅ CSV مباشر:', S.data.length, 'سجل');
+    S.filtered = [...S.data];
+    setSrcStatus('ok');
+    populateFilters(); renderAll();
+    document.getElementById('lastUpd').textContent = t('lastUpd') + ' ' + new Date().toLocaleTimeString(S.lang==='ar'?'ar-EG':'en-US');
+    if (manual) showNotif((S.lang==='ar'?'تم التحميل: ':'Loaded: ') + S.data.length + (S.lang==='ar'?' سجل':' records'), 'gn');
+    return;
+  } catch(e) {
+    console.warn('CSV مباشر فشل:', e.message);
   }
 
   // كل المحاولات فشلت
   setSrcStatus('err');
   const cstat = document.getElementById('cstat');
-  if (cstat) { cstat.style.display='block'; cstat.style.background='var(--red-bg)'; cstat.style.color='var(--red)'; cstat.textContent='✗ '+(S.lang==='ar'?'تعذّر الاتصال — تأكد أن الجدول منشور للعموم':'Connection failed — ensure sheet is published publicly'); }
+  if (cstat) { cstat.style.display='block'; cstat.style.background='var(--red-bg)'; cstat.style.color='var(--red)'; cstat.textContent='✗ ' + (S.lang==='ar'?'تعذّر الاتصال':'Connection failed'); }
   if (!S.data.length) { S.data=genDemo(); S.filtered=[...S.data]; populateFilters(); renderAll(); }
-  showNotif((S.lang==='ar'?'تعذّر الاتصال — عرض بيانات تجريبية':'Failed to connect — showing demo data'),'or');
+  showNotif((S.lang==='ar'?'تعذّر الاتصال — عرض بيانات تجريبية':'Failed to connect — showing demo data'), 'or');
 }
 
 function setSrcStatus(s) {
