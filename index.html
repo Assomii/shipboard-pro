@@ -674,13 +674,11 @@ async function loadFromSheets(manual=false) {
   if (manual) showNotif(t('loading'),'am');
 
   // نجرب ٣ طرق للوصول للبيانات بالترتيب
-  const proxies = [
+ const proxies = [
     'https://corsproxy.io/?' + encodeURIComponent(url),
     'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+    'https://thingproxy.freeboard.io/fetch/' + url,
     url,
-];
-    'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
-    'https://cors-anywhere.herokuapp.com/' + url,
   ];
 
   let lastErr = null;
